@@ -1,0 +1,4 @@
+logs/
+mqtt
+*.log
+.DS_Store
