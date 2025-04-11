@@ -6,7 +6,7 @@ COPY ecoflow2db /ecoflow2db/bin/
 COPY docker-entrypoint.sh /
 
 RUN chmod a+x docker-entrypoint.sh && \
-   mkdir /ecoflow2db/log && chmod 777 /mqtt2db/log
+   mkdir /ecoflow2db/log && chmod 777 /ecoflow2db/log
 
 ENV LOGFILE=/ecoflow2db/log/
 
