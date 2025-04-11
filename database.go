@@ -34,6 +34,9 @@ func InitDatabase() {
 	if err != nil {
 		log.Log.Fatalf("REST audit URL incorrect: " + databaseUrl)
 	}
+	if dbPassword == "" {
+		dbPassword = os.Getenv("ECOFLOW_DB_PASS")
+	}
 	_, err = flynn.Handler(dbRef, dbPassword)
 	if err != nil {
 		log.Log.Fatalf("Register error log: %v", err)
