@@ -32,7 +32,7 @@ func (l *logBridge) Printf(format string, v ...interface{}) {
 
 func StartLog(fileName string) {
 	services.ServerMessage("Init logging")
-	level := os.Getenv("ENABLE_ECO2DB_DEBUG")
+	level := os.Getenv("ENABLE_DEBUG")
 	logLevel := logrus.WarnLevel
 	switch level {
 	case "debug", "1":

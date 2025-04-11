@@ -91,6 +91,8 @@ type InverterHeartbeat struct {
 	Unknown6               *uint32                `protobuf:"varint,67,opt,name=unknown6,proto3,oneof" json:"unknown6,omitempty"`
 	Unknown7               *uint32                `protobuf:"varint,68,opt,name=unknown7,proto3,oneof" json:"unknown7,omitempty"`
 	Unknown8               *uint32                `protobuf:"varint,82,opt,name=unknown8,proto3,oneof" json:"unknown8,omitempty"`
+	Unknown8A              *uint32                `protobuf:"varint,98,opt,name=unknown8a,proto3,oneof" json:"unknown8a,omitempty"`
+	Unknown8B              *uint32                `protobuf:"varint,109,opt,name=unknown8b,proto3,oneof" json:"unknown8b,omitempty"`
 	Unknown9               *uint32                `protobuf:"varint,124,opt,name=unknown9,proto3,oneof" json:"unknown9,omitempty"`
 	Unknown10              *uint32                `protobuf:"varint,125,opt,name=unknown10,proto3,oneof" json:"unknown10,omitempty"`
 	Unknown11              *uint32                `protobuf:"varint,134,opt,name=unknown11,proto3,oneof" json:"unknown11,omitempty"`
@@ -603,6 +605,20 @@ func (x *InverterHeartbeat) GetUnknown7() uint32 {
 func (x *InverterHeartbeat) GetUnknown8() uint32 {
 	if x != nil && x.Unknown8 != nil {
 		return *x.Unknown8
+	}
+	return 0
+}
+
+func (x *InverterHeartbeat) GetUnknown8A() uint32 {
+	if x != nil && x.Unknown8A != nil {
+		return *x.Unknown8A
+	}
+	return 0
+}
+
+func (x *InverterHeartbeat) GetUnknown8B() uint32 {
+	if x != nil && x.Unknown8B != nil {
+		return *x.Unknown8B
 	}
 	return 0
 }
@@ -1197,7 +1213,7 @@ var File_powerstream_proto protoreflect.FileDescriptor
 
 const file_powerstream_proto_rawDesc = "" +
 	"\n" +
-	"\x11powerstream.proto\"\xb3!\n" +
+	"\x11powerstream.proto\"\x95\"\n" +
 	"\x11InverterHeartbeat\x12)\n" +
 	"\x0einv_error_code\x18\x01 \x01(\rH\x00R\finvErrorCode\x88\x01\x01\x12-\n" +
 	"\x10inv_warning_code\x18\x03 \x01(\rH\x01R\x0einvWarningCode\x88\x01\x01\x12)\n" +
@@ -1278,13 +1294,15 @@ const file_powerstream_proto_rawDesc = "" +
 	"\bunknown5\x18B \x01(\rH@R\bunknown5\x88\x01\x01\x12\x1f\n" +
 	"\bunknown6\x18C \x01(\rHAR\bunknown6\x88\x01\x01\x12\x1f\n" +
 	"\bunknown7\x18D \x01(\rHBR\bunknown7\x88\x01\x01\x12\x1f\n" +
-	"\bunknown8\x18R \x01(\rHCR\bunknown8\x88\x01\x01\x12\x1f\n" +
-	"\bunknown9\x18| \x01(\rHDR\bunknown9\x88\x01\x01\x12!\n" +
-	"\tunknown10\x18} \x01(\rHER\tunknown10\x88\x01\x01\x12\"\n" +
-	"\tunknown11\x18\x86\x01 \x01(\rHFR\tunknown11\x88\x01\x01\x12\"\n" +
-	"\ttimestamp\x18\x99\x01 \x01(\rHGR\ttimestamp\x88\x01\x01\x12\"\n" +
-	"\tunknown12\x18\x9a\x01 \x01(\rHHR\tunknown12\x88\x01\x01\x12\"\n" +
-	"\tunknown13\x18\x9b\x01 \x01(\rHIR\tunknown13\x88\x01\x01B\x11\n" +
+	"\bunknown8\x18R \x01(\rHCR\bunknown8\x88\x01\x01\x12!\n" +
+	"\tunknown8a\x18b \x01(\rHDR\tunknown8a\x88\x01\x01\x12!\n" +
+	"\tunknown8b\x18m \x01(\rHER\tunknown8b\x88\x01\x01\x12\x1f\n" +
+	"\bunknown9\x18| \x01(\rHFR\bunknown9\x88\x01\x01\x12!\n" +
+	"\tunknown10\x18} \x01(\rHGR\tunknown10\x88\x01\x01\x12\"\n" +
+	"\tunknown11\x18\x86\x01 \x01(\rHHR\tunknown11\x88\x01\x01\x12\"\n" +
+	"\ttimestamp\x18\x99\x01 \x01(\rHIR\ttimestamp\x88\x01\x01\x12\"\n" +
+	"\tunknown12\x18\x9a\x01 \x01(\rHJR\tunknown12\x88\x01\x01\x12\"\n" +
+	"\tunknown13\x18\x9b\x01 \x01(\rHKR\tunknown13\x88\x01\x01B\x11\n" +
 	"\x0f_inv_error_codeB\x13\n" +
 	"\x11_inv_warning_codeB\x11\n" +
 	"\x0f_pv1_error_codeB\x13\n" +
@@ -1354,7 +1372,11 @@ const file_powerstream_proto_rawDesc = "" +
 	"\t_unknown5B\v\n" +
 	"\t_unknown6B\v\n" +
 	"\t_unknown7B\v\n" +
-	"\t_unknown8B\v\n" +
+	"\t_unknown8B\f\n" +
+	"\n" +
+	"_unknown8aB\f\n" +
+	"\n" +
+	"_unknown8bB\v\n" +
 	"\t_unknown9B\f\n" +
 	"\n" +
 	"_unknown10B\f\n" +
