@@ -45,6 +45,9 @@ func InitDatabase() {
 	if err != nil {
 		log.Log.Fatalf("REST audit URL incorrect: " + databaseUrl)
 	}
+	if dbRef.User == "" {
+		dbRef.User = os.Getenv("ECOFLOW_DB_USER")
+	}
 	if dbPassword == "" {
 		dbPassword = os.Getenv("ECOFLOW_DB_PASS")
 	}
