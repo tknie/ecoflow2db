@@ -17,19 +17,14 @@ import (
 	"github.com/tknie/ecoflow2db"
 )
 
-const layout = "2006-01-02T15:04:05"
-
-const defaultMaxTries = 10
-
 func init() {
 	ecoflow2db.StartLog("ecoflow2db.log")
 }
 
 func main() {
 	create := false
-	maxTries := defaultMaxTries
 
-	flag.IntVar(&maxTries, "maxtries", defaultMaxTries, "The QoS to subscribe to messages at")
+	flag.IntVar(&ecoflow2db.LoopSeconds, "t", 1, "The seconds between REST API queries")
 	flag.BoolVar(&create, "create", false, "Create new database")
 	flag.Parse()
 

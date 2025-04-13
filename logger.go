@@ -1,3 +1,14 @@
+/*
+* Copyright 2025 Thorsten A. Knieling
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+ */
+
 package ecoflow2db
 
 import (
@@ -11,24 +22,6 @@ import (
 )
 
 var logRus = logrus.StandardLogger()
-
-var logger = &logBridge{}
-
-type logBridge struct {
-}
-
-func (l *logBridge) Println(v ...interface{}) {
-	s := ""
-	for range v {
-		s += "%v "
-	}
-	s += "\n"
-	tlog.Log.Debugf(s, v...)
-}
-
-func (l *logBridge) Printf(format string, v ...interface{}) {
-	tlog.Log.Debugf(format, v...)
-}
 
 func StartLog(fileName string) {
 	services.ServerMessage("Init logging")

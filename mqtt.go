@@ -1,3 +1,14 @@
+/*
+* Copyright 2025 Thorsten A. Knieling
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+ */
+
 package ecoflow2db
 
 import (
@@ -26,11 +37,16 @@ var ecoclient *ecoflow.MqttClient
 var devices *ecoflow.DeviceListResponse
 var tableName string
 
+var quit = make(chan struct{})
+
 var mqttid common.RegDbID
 
-var (
-	mu sync.Mutex
-)
+type statMqtt struct {
+	mu      sync.Mutex
+	counter uint64
+}
+
+var mapStatMqtt = make(map[string]*statMqtt)
 
 func InitMqtt(user, password string) {
 	fmt.Println("Initialize MQTT client")
@@ -46,12 +62,28 @@ func InitMqtt(user, password string) {
 	if err != nil {
 		log.Log.Fatalf("Error new MQTT client: %v", err)
 	}
-	mqttid = openDatabase()
+	mqttid = connnectDatabase()
 	log.Log.Debugf("Strt mqtt Ecoflow connect")
 	fmt.Println("Connecting MQTT client")
 	ecoclient.Connect()
 	log.Log.Debugf("Wait for Ecoflow disconnect")
 	fmt.Println("Waiting for MQTT data")
+
+	ticker := time.NewTicker(1 * time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Printf("Statistics:\n")
+				for k, v := range mapStatMqtt {
+					fmt.Printf("  %s got %d messages\n", k, v.counter)
+				}
+			case <-quit:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 }
 
 func setupGracefulShutdown(done chan bool) {
@@ -65,36 +97,48 @@ func setupGracefulShutdown(done chan bool) {
 		log.Log.Infof("Received shutdown signal")
 
 		done <- true
+		endHttp()
+		close(quit)
 	}()
 }
 
 func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
-	mu.Lock()
-	defer mu.Unlock()
-
 	serialNumber := getSnFromTopic(msg.Topic())
+	var stat *statMqtt
+	if s, ok := mapStatMqtt[serialNumber]; ok {
+		stat = s
+	} else {
+		stat = &statMqtt{}
+		mapStatMqtt[serialNumber] = stat
+	}
+	stat.mu.Lock()
+	defer stat.mu.Unlock()
 
-	fmt.Printf("Received message of %s at %v\n", serialNumber, time.Now())
+	stat.counter++
 
-	log.Log.Debugf("received message on topic %s; body (retain: %t): %s\n", msg.Topic(),
+	fmt.Printf("Received message of %s at %v\n", serialNumber, time.Now().Format(layout))
+
+	log.Log.Debugf("received message on topic %s; body (retain: %t):\n%s", msg.Topic(),
 		msg.Retained(), FormatByteBuffer("MQTT Body", msg.Payload()))
 	payload := msg.Payload()
 
 	data := make(map[string]interface{})
 	err := json.Unmarshal(payload, &data)
 	if err == nil {
-		fmt.Printf("-> CmdId   %f\n", data["cmdId"].(float64))
-		fmt.Printf("-> CmdFunc %f\n", data["cmdFunc"].(float64))
-		fmt.Printf("-> Version %s\n", data["version"].(string))
-		fmt.Printf("ID           : %f\n", data["id"].(float64))
-		if v, ok := data["mppt.dcChgCurrent"]; ok {
-			fmt.Println("DCChgCurrent :", v.(float64))
+		log.Log.Debugf("JSON: %v", string(payload))
+		cmdId := int(data["cmdId"].(float64))
+		moduleType := data["moduleType"].(string)
+		if log.IsDebugLevel() {
+			log.Log.Debugf("-> CmdId   %03d", cmdId)
+			log.Log.Debugf("-> CmdFunc %f", data["cmdFunc"].(float64))
+			log.Log.Debugf("-> Version %s", data["version"].(string))
+			log.Log.Debugf("ID           : %f", data["id"].(float64))
 		}
-		if v, ok := data["mppt.cfgChgWatts"]; ok {
-			fmt.Printf("ChgWatts     : %f\n", v.(float64))
+		if _, ok := data["params"]; ok {
+			data = data["params"].(map[string]interface{})
 		}
-		tn := serialNumber + "_mqtt"
-		checkTable(mqttid, tn, func() []*common.Column {
+		tn := fmt.Sprintf("%s_mqtt_%03d_%s", serialNumber, cmdId, moduleType)
+		if !checkTable(mqttid, tn, func() []*common.Column {
 			keys := make([]string, 0, len(data))
 			for k := range data {
 				keys = append(keys, k)
@@ -104,67 +148,21 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 			// prefix := ""
 			for _, k := range keys {
 				v := data[k]
-				// prefix = strings.Split(k, ".")[0]
-				// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
 				name := "eco_" + strings.ReplaceAll(k, ".", "_")
 				log.Log.Debugf("Add column %s=%v %T -> %s\n", k, v, v, name)
-				switch val := v.(type) {
-				case string:
-					columns = append(columns, &common.Column{Name: name, DataType: common.Alpha, Length: 255})
-				case float64:
-					if val == math.Trunc(val) && val < math.MaxInt64 {
-						columns = append(columns, &common.Column{Name: name, DataType: common.BigInteger, Length: 4})
-					} else {
-						columns = append(columns, &common.Column{Name: name, DataType: common.Decimal, Length: 8})
-					}
-				case []interface{}, map[string]interface{}:
-					columns = append(columns, &common.Column{Name: name, DataType: common.Alpha, Length: 1024})
-				default:
-					fmt.Printf("Unknown type %s=%T\n", k, v)
-					log.Log.Fatalf("Unknown type %s=%T\n", k, v)
-				}
+				column := createValueColumn(name, v)
+				columns = append(columns, column)
 			}
 			return columns
-		})
-		if v, ok := data["mppt.outVol"]; ok {
-			fmt.Printf("OutVol       : %f\n", v.(float64))
+		}) {
+			checkTableColumns(mqttid, tn, data)
 		}
-		fmt.Println("Timestamp    :", time.Unix(int64(data["timestamp"].(float64)), 0))
-		fmt.Printf("Data: %#v\n", data)
-		insertTable(mqttid, tn, func() ([]string, [][]any) {
-			keys := make([]string, 0)
-			for k := range data {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-			columns := make([]any, 0)
-			// prefix := ""
-			fields := make([]string, 0)
-			for _, k := range keys {
-				v := data[k]
-				// prefix = strings.Split(k, ".")[0]
-				// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
-				name := "eco_" + strings.ReplaceAll(k, ".", "_")
-				fields = append(fields, name)
-				log.Log.Debugf(" %s=%v %T -> %s\n", k, v, v, name)
-				switch val := v.(type) {
-				case string:
-					columns = append(columns, val)
-				case float64:
-					if val == math.Trunc(val) {
-						columns = append(columns, int64(val))
-					} else {
-						columns = append(columns, val)
-					}
-				case []interface{}, map[string]interface{}:
-					columns = append(columns, fmt.Sprintf("%#v", val))
-				default:
-					fmt.Printf("Unknown type %s=%T\n", k, v)
-					log.Log.Fatalf("Unknown type %s=%T\n", k, v)
-				}
-			}
-			return fields, [][]any{columns}
-		})
+		err = insertTable(mqttid, tn, data, insertMqttData)
+		if err != nil && strings.Contains(err.Error(), "conn closed") {
+			// Connection is closed reconnect
+			mqttid.Close()
+			mqttid = connnectDatabase()
+		}
 		return
 	}
 
@@ -190,24 +188,65 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 
 }
 
+func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
+	keys := make([]string, 0)
+	for k := range data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	columns := make([]any, 0)
+	// prefix := ""
+	fields := make([]string, 0)
+	for _, k := range keys {
+		v := data[k]
+		// prefix = strings.Split(k, ".")[0]
+		// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
+		name := "eco_" + strings.ReplaceAll(k, ".", "_")
+		fields = append(fields, name)
+		log.Log.Debugf(" %s=%v %T -> %s\n", k, v, v, name)
+		switch val := v.(type) {
+		case string:
+			columns = append(columns, val)
+		case float64:
+			if val == math.Trunc(val) {
+				columns = append(columns, int64(val))
+			} else {
+				columns = append(columns, val)
+			}
+		case []interface{}, map[string]interface{}:
+			s := fmt.Sprintf("%#v", val)
+			if len(s) > 1024 {
+				fmt.Println(" -> ", k, " size to big")
+				fmt.Println(s)
+				log.Log.Fatal("Fatal error creating insert")
+			}
+			columns = append(columns, s)
+		default:
+			fmt.Printf("Unknown type %s=%T\n", k, v)
+			log.Log.Fatalf("Unknown type %s=%T\n", k, v)
+		}
+	}
+	return fields, [][]any{columns}
+}
+
 func displayHeader(msg *Header) {
-	fmt.Printf("-> Header  %s\n", msg)
-	fmt.Printf("-> SM      %s\n", msg.GetDeviceSn())
-	fmt.Printf("-> Version %d\n", msg.GetVersion())
-	fmt.Printf("-> PayloadVersion %d\n", msg.GetPayloadVer())
-	fmt.Printf("-> SRC     %d\n", msg.GetSrc())
-	fmt.Printf("-> Dest    %d\n", msg.GetDest())
-	fmt.Printf("-> Datalen %d\n", msg.GetDataLen())
-	fmt.Printf("-> CmdId   %d\n", msg.GetCmdId())
-	fmt.Printf("-> CmdFunc %d\n", msg.GetCmdFunc())
-	fmt.Printf("-> DSRC    %d\n", msg.GetDSrc())
-	fmt.Printf("-> DDest   %d\n", msg.GetDDest())
-	fmt.Printf("-> NeedAcl %d\n", msg.GetNeedAck())
+	log.Log.Infof("-> Header  %s\n", msg)
+	log.Log.Infof("-> SM      %s\n", msg.GetDeviceSn())
+	log.Log.Infof("-> Version %d\n", msg.GetVersion())
+	log.Log.Infof("-> PayloadVersion %d\n", msg.GetPayloadVer())
+	log.Log.Infof("-> SRC     %d\n", msg.GetSrc())
+	log.Log.Infof("-> Dest    %d\n", msg.GetDest())
+	log.Log.Infof("-> Datalen %d\n", msg.GetDataLen())
+	log.Log.Infof("-> CmdId   %d\n", msg.GetCmdId())
+	log.Log.Infof("-> CmdFunc %d\n", msg.GetCmdFunc())
+	log.Log.Infof("-> DSRC    %d\n", msg.GetDSrc())
+	log.Log.Infof("-> DDest   %d\n", msg.GetDDest())
+	log.Log.Infof("-> NeedAcl %d\n", msg.GetNeedAck())
 }
 
 func OnConnect(client mqtt.Client) {
 	for _, d := range devices.Devices {
-		fmt.Println("Register MQTT:", d.SN)
+		fmt.Println("Subscribe MQTT entries for", d.SN)
 		err := ecoclient.SubscribeForParameters(d.SN, MessageHandler)
 		if err != nil {
 			log.Log.Errorf("Unable to subscribe for parameters %s: %v", d.SN, err)

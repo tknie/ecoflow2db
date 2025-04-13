@@ -1,3 +1,14 @@
+/*
+* Copyright 2025 Thorsten A. Knieling
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+ */
+
 package ecoflow2db
 
 import (
@@ -10,7 +21,6 @@ import (
 )
 
 func displayPayload(sn string, payload []byte) bool {
-	fmt.Printf("================================================>===============\n")
 	log.Log.Debugf("Base64: %s", base64.RawStdEncoding.EncodeToString(payload))
 	log.Log.Debugf("Payload %s", FormatByteBuffer("MQTT Body", payload))
 
@@ -30,20 +40,22 @@ func displayPayload(sn string, payload []byte) bool {
 				log.Log.Debugf("-> InverterHearbeat %s\n", ih)
 				msgChan <- &storeElement{object: ih, sn: sn}
 
-				log.Log.Debugf("DynamicWatts   %v", ih.GetDynamicWatts())
-				log.Log.Debugf("LowerLimit     %v", ih.GetLowerLimit())
-				log.Log.Debugf("PermanentWatts %v", ih.GetPermanentWatts())
-				log.Log.Debugf("UpperLimit     %v", ih.GetUpperLimit())
-				log.Log.Debugf("InstallCountry %v", ih.GetInstallCountry())
-				log.Log.Debugf("InvOnOff       %v", ih.GetInvOnOff())
-				log.Log.Debugf("Pv10pVolt      %v", ih.GetPv1OpVolt())
-				log.Log.Debugf("Pv1InputVolt   %v", ih.GetPv1InputVolt())
-				log.Log.Debugf("Pv1InputWatts  %v", ih.GetPv1InputWatts())
-				log.Log.Debugf("Pv20pVolt      %v", ih.GetPv2OpVolt())
-				log.Log.Debugf("Pv2InputVolt   %v", ih.GetPv2InputVolt())
-				log.Log.Debugf("Pv2InputWatts  %v", ih.GetPv2InputWatts())
-				log.Log.Debugf("Timestamp      %v", ih.GetTimestamp())
-				log.Log.Debugf("Time           %v", time.Unix(int64(ih.GetTimestamp()), 0))
+				if log.IsDebugLevel() {
+					log.Log.Debugf("DynamicWatts   %v", ih.GetDynamicWatts())
+					log.Log.Debugf("LowerLimit     %v", ih.GetLowerLimit())
+					log.Log.Debugf("PermanentWatts %v", ih.GetPermanentWatts())
+					log.Log.Debugf("UpperLimit     %v", ih.GetUpperLimit())
+					log.Log.Debugf("InstallCountry %v", ih.GetInstallCountry())
+					log.Log.Debugf("InvOnOff       %v", ih.GetInvOnOff())
+					log.Log.Debugf("Pv10pVolt      %v", ih.GetPv1OpVolt())
+					log.Log.Debugf("Pv1InputVolt   %v", ih.GetPv1InputVolt())
+					log.Log.Debugf("Pv1InputWatts  %v", ih.GetPv1InputWatts())
+					log.Log.Debugf("Pv20pVolt      %v", ih.GetPv2OpVolt())
+					log.Log.Debugf("Pv2InputVolt   %v", ih.GetPv2InputVolt())
+					log.Log.Debugf("Pv2InputWatts  %v", ih.GetPv2InputWatts())
+					log.Log.Debugf("Timestamp      %v", ih.GetTimestamp())
+					log.Log.Debugf("Time           %v", time.Unix(int64(ih.GetTimestamp()), 0))
+				}
 			}
 		case 32:
 			pp := &PowerPack{}
@@ -51,15 +63,17 @@ func displayPayload(sn string, payload []byte) bool {
 			if err != nil {
 				log.Log.Errorf("Unable to parse pdata message: %v", err)
 			} else {
+				log.Log.Debugf("Power Pack: %#v", pp)
 				for _, p := range pp.SysPowerStream {
-					fmt.Println(p.BatteryPower)
+					msgChan <- &storeElement{object: p, sn: sn}
 				}
 			}
 		default:
+			log.Log.Infof("Unknown Cmd ID %d", platform.Msg.GetCmdId())
 			displayHeader(platform.Msg)
 			fmt.Println("Unknown Cmd ID", platform.Msg.GetCmdId())
-			fmt.Printf("received message: %s\n", FormatByteBuffer("MSG Payload", platform.Msg.Pdata))
 			fmt.Printf("Base64: %s\n", base64.RawStdEncoding.EncodeToString(payload))
+			fmt.Printf("Received message: %s\n", FormatByteBuffer("MSG Payload", platform.Msg.Pdata))
 			return false
 		}
 	}

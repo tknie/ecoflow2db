@@ -68,6 +68,8 @@ github.com/tknie/flynn v0.9.6-0.20250407150851-f1a8ab7a41f5 h1:0PHbNhg4OdMv+Nf0n
 github.com/tknie/flynn v0.9.6-0.20250407150851-f1a8ab7a41f5/go.mod h1:rlo+C1wEo0q7tLO9+zbudLsGemsIpUfOaLsHNcBjq/M=
 github.com/tknie/flynn v0.9.6-0.20250407160338-801316a357eb h1:xpnJ2ANoCOr4G++7Qcz5+IkGMnazc8z7/BYdCyy4+aY=
 github.com/tknie/flynn v0.9.6-0.20250407160338-801316a357eb/go.mod h1:rlo+C1wEo0q7tLO9+zbudLsGemsIpUfOaLsHNcBjq/M=
+github.com/tknie/flynn v0.9.6 h1:n6oqrajl4wjTi0r+QAXMv4CalNwlivjj9thRin9SjVk=
+github.com/tknie/flynn v0.9.6/go.mod h1:rlo+C1wEo0q7tLO9+zbudLsGemsIpUfOaLsHNcBjq/M=
 github.com/tknie/log v0.1.0 h1:MrYiDgntQvXm1H0kjJZnz+AI7dB9KbhVYpcohRnAfvU=
 github.com/tknie/log v0.1.0/go.mod h1:W67unT0xxqTLc9tyxpdV1lED/JuD0veFgxT/astdxt4=
 github.com/tknie/services v0.3.0 h1:DPWHv+uP2X2mxOm2zmv57OV3LTsRz3rLN9aeqCQdBzQ=
@@ -86,10 +88,14 @@ golang.org/x/exp v0.0.0-20250207012021-f9890c6ad9f3 h1:qNgPs5exUA+G0C96DrPwNrvLS
 golang.org/x/exp v0.0.0-20250207012021-f9890c6ad9f3/go.mod h1:tujkw807nyEEAamNbDrEGzRav+ilXA7PCRAd6xsmwiU=
 golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 h1:nDVHiLt8aIbd/VzvPWN6kSOPE7+F/fNFDSXLVYkE/Iw=
 golang.org/x/exp v0.0.0-20250305212735-054e65f0b394/go.mod h1:sIifuuw/Yco/y6yb6+bDNfyeQ/MdPUy/hKEMYQV17cM=
+golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 h1:R84qjqJb5nVJMxqWYb3np9L5ZsaDtB+a39EqjV0JSUM=
+golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0/go.mod h1:S9Xr4PYopiDyqSyp5NjCrhFrqg6A5zA2E/iPHPhqnS8=
 golang.org/x/net v0.37.0 h1:1zLorHbz+LYj7MQlSf1+2tPIIgibq2eL5xkrGk6f+2c=
 golang.org/x/net v0.37.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
 golang.org/x/net v0.38.0 h1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=
 golang.org/x/net v0.38.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
+golang.org/x/net v0.39.0 h1:ZCu7HMWDxpXpaiKdhzIfaltL9Lp31x/3fCP11bc6/fY=
+golang.org/x/net v0.39.0/go.mod h1:X7NRbYVEA+ewNkCNyJ513WmMdQ3BineSwVtN2zD/d+E=
 golang.org/x/sync v0.12.0 h1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=
 golang.org/x/sync v0.12.0/go.mod h1:1dzgHSNfp02xaA81J2MS99Qcpr2w7fw1gpm99rleRqA=
 golang.org/x/sync v0.13.0 h1:AauUjRAJ9OSnvULf/ARrrVywoJDy0YS2AwQ98I37610=

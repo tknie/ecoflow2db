@@ -1,3 +1,14 @@
+/*
+* Copyright 2025 Thorsten A. Knieling
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+ */
+
 package ecoflow2db
 
 import (
@@ -41,12 +52,16 @@ func InitDatabase() {
 	if err != nil {
 		log.Log.Fatalf("Register error log: %v", err)
 	}
-	dbTables = flynn.Maps()
-	log.Log.Infof("Tables: %#v", dbTables)
+	readDatabaseMaps()
 	go storeDatabase()
 }
 
-func openDatabase() common.RegDbID {
+func readDatabaseMaps() {
+	dbTables = flynn.Maps()
+	log.Log.Infof("Tables: %#v", dbTables)
+}
+
+func connnectDatabase() common.RegDbID {
 	log.Log.Debugf("Connected to database %s", dbRef)
 	id, err := flynn.Handler(dbRef, dbPassword)
 	if err != nil {
@@ -56,7 +71,7 @@ func openDatabase() common.RegDbID {
 }
 
 func storeDatabase() {
-	storeid := openDatabase()
+	storeid := connnectDatabase()
 	for m := range msgChan {
 		tn := m.checkTable(storeid)
 
@@ -82,11 +97,12 @@ func (m *storeElement) checkTable(storeid common.RegDbID) string {
 		if err != nil {
 			log.Log.Fatal("Error creating database table: ", err)
 		}
+		readDatabaseMaps()
 	}
 	return tn
 }
 
-func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*common.Column) string {
+func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*common.Column) bool {
 	if !slices.Contains(dbTables, strings.ToLower(tn)) {
 		fmt.Printf("Database %s needed to be created\n", tn)
 		err := storeid.CreateTable(tn, generateColumns())
@@ -94,13 +110,15 @@ func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*com
 			fmt.Printf("Error creating database for %s : %v\n", tn, err)
 			log.Log.Fatal("Error creating database table: ", err)
 		}
+		readDatabaseMaps()
+		return true
 	}
-	return tn
+	return false
 }
 
-func insertTable(storeid common.RegDbID, tn string, generateColumns func() ([]string, [][]any)) {
+func insertTable(storeid common.RegDbID, tn string, data map[string]interface{}, generateColumns func(map[string]interface{}) ([]string, [][]any)) error {
 
-	fields, values := generateColumns()
+	fields, values := generateColumns(data)
 	log.Log.Debugf("Insert columnFields: %#v", fields)
 	if len(fields) == 0 {
 		debug.PrintStack()
@@ -113,5 +131,5 @@ func insertTable(storeid common.RegDbID, tn string, generateColumns func() ([]st
 		fmt.Printf("Error inserting record: %v\n", err)
 		// log.Log.Fatal("Error inserting record: ", err)
 	}
-
+	return err
 }
