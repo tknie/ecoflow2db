@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 
-RUN  apt-get update && apt-get -y upgrade
+RUN  apt-get update && apt-get -y upgrade && apt-get install -y ca-certificates
 
 COPY ecoflow2db /ecoflow2db/bin/
 COPY docker-entrypoint.sh /
