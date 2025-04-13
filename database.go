@@ -75,7 +75,7 @@ func storeDatabase() {
 	for m := range msgChan {
 		tn := m.checkTable(storeid)
 
-		log.Log.Debugf("Insert structFields: %T", m.object)
+		log.Log.Infof("Insert structFields: %T into tn", m.object)
 		fields := []string{"*"}
 		insert := &common.Entries{DataStruct: m.object,
 			Fields: fields}
@@ -92,7 +92,7 @@ func storeDatabase() {
 func (m *storeElement) checkTable(storeid common.RegDbID) string {
 	tn := strings.ToLower(tableName + "_" + m.sn + "_" + getType(m.object))
 	if !slices.Contains(dbTables, tn) {
-		fmt.Printf("Database %s needed to be created", tn)
+		fmt.Printf("Database %s needed to be created\n", tn)
 		err := storeid.CreateTable(tn, m.object)
 		if err != nil {
 			log.Log.Fatal("Error creating database table: ", err)

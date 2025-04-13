@@ -13,6 +13,7 @@ package ecoflow2db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -29,7 +30,7 @@ import (
 
 const layout = "2006-01-02 15:04:05.000"
 
-var LoopSeconds = 1
+var LoopSeconds = 60
 var httpDone = make(chan bool, 1)
 
 func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
@@ -99,14 +100,21 @@ func httpParameterStore(client *ecoflow.Client) {
 		select {
 		case <-httpDone:
 			return
-		case <-time.After(time.Minute * time.Duration(LoopSeconds)):
+		case <-time.After(time.Second * time.Duration(LoopSeconds)):
 
 			for _, l := range devices.Devices {
 				if l.Online == 1 {
 					tn := "device_" + l.SN + "_quota"
+					stat := getStatEntry(l.SN)
 					resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 					if err != nil {
 						log.Log.Fatalf("Error getting device list: %v", err)
+					}
+					if _, ok := resp["serial_number"]; !ok {
+						resp["serial_number"] = l.SN
+					}
+					if _, ok := resp["timestamp"]; !ok {
+						resp["timestamp"] = time.Now()
 					}
 					checkTableColumns(id, tn, resp)
 					err = insertTable(id, tn, resp, insertHttpData)
@@ -114,25 +122,41 @@ func httpParameterStore(client *ecoflow.Client) {
 						id.Close()
 						id = connnectDatabase()
 					}
+					stat.httpCounter++
 				}
 			}
 		}
-		fmt.Println("Triggered", counter, "query at", time.Now().Format(layout))
+		log.Log.Infof("Triggered %d. HTTP query at %s", counter, time.Now().Format(layout))
 	}
 }
 
 func createValueColumn(name string, v interface{}) *common.Column {
+	if strings.ToLower(name) == "timestamp" {
+		return &common.Column{Name: name, DataType: common.CurrentTimestamp, Length: 8}
+	}
 	switch val := v.(type) {
 	case string:
 		return &common.Column{Name: name, DataType: common.Alpha, Length: 255}
+	case time.Time:
+		return &common.Column{Name: name, DataType: common.CurrentTimestamp, Length: 8}
 	case float64:
 		if val == math.Trunc(val) && val < math.MaxInt64 {
-			return &common.Column{Name: name, DataType: common.BigInteger, Length: 4}
+			return &common.Column{Name: name, DataType: common.BigInteger, Length: 0}
 		} else {
 			return &common.Column{Name: name, DataType: common.Decimal, Length: 8}
 		}
 	case []interface{}, map[string]interface{}:
-		return &common.Column{Name: name, DataType: common.Alpha, Length: 1024}
+		b, err := json.Marshal(val)
+		if err != nil {
+			fmt.Printf("Error marshal: %#v", val)
+			return nil
+		}
+		s := string(b)
+		l := uint16(1024)
+		if len(s) > 1024 {
+			l += uint16(1024) + uint16(len(s))
+		}
+		return &common.Column{Name: name, DataType: common.Alpha, Length: l}
 	default:
 		fmt.Printf("Unknown type %s=%T\n", name, v)
 	}
@@ -147,17 +171,19 @@ func checkTableColumns(id common.RegDbID, tn string, data map[string]interface{}
 		return
 	}
 	log.Log.Debugf("Validate to defined columns %#v", col)
-	columns := make([]any, 0)
+	columns := make([]*common.Column, 0)
 	for k, v := range data {
-		name := strings.ToLower(k)
+		name := "eco_" + strings.ReplaceAll(strings.ToLower(k), ".", "_")
 		if !slices.Contains(col, name) {
 			log.Log.Debugf("Column not in table %s", name)
-			c := createValueColumn(k, v)
+			c := createValueColumn(name, v)
 			columns = append(columns, c)
 		}
 	}
 	if len(columns) > 0 {
-		id.AdaptTable(tn, columns)
+		log.Log.Debugf("Add %d. columns to table %T", len(columns), columns)
+		err = id.AdaptTable(tn, columns)
+		log.Log.Debugf("Added %d. columns to table: %v", len(columns), err)
 	}
 }
 
@@ -186,8 +212,16 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 			} else {
 				columns = append(columns, val)
 			}
+		case time.Time:
+			columns = append(columns, val)
 		case []interface{}, map[string]interface{}:
-			columns = append(columns, fmt.Sprintf("%#v", val))
+			b, err := json.Marshal(val)
+			if err != nil {
+				fmt.Printf("Error marshal: %#v", val)
+			} else {
+				s := string(b)
+				columns = append(columns, s)
+			}
 		default:
 			fmt.Printf("Unknown type %s=%T\n", k, v)
 			log.Log.Fatalf("Unknown type %s=%T\n", k, v)

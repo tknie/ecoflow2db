@@ -68,7 +68,7 @@ type InverterHeartbeat struct {
 	InvRelayStatus         *int32                 `protobuf:"varint,43,opt,name=inv_relay_status,json=invRelayStatus,proto3,oneof" json:"inv_relay_status,omitempty"`
 	Pv1RelayStatus         *int32                 `protobuf:"varint,44,opt,name=pv1_relay_status,json=pv1RelayStatus,proto3,oneof" json:"pv1_relay_status,omitempty"`
 	Pv2RelayStatus         *int32                 `protobuf:"varint,45,opt,name=pv2_relay_status,json=pv2RelayStatus,proto3,oneof" json:"pv2_relay_status,omitempty"`
-	InstallCountry         *uint32                `protobuf:"varint,46,opt,name=install_country,json=installCountry,proto3,oneof" json:"install_country,omitempty"`
+	InstallCountry         *string                `protobuf:"bytes,46,opt,name=install_country,json=installCountry,proto3,oneof" json:"install_country,omitempty"`
 	InstallTown            *uint32                `protobuf:"varint,47,opt,name=install_town,json=installTown,proto3,oneof" json:"install_town,omitempty"`
 	PermanentWatts         *uint32                `protobuf:"varint,48,opt,name=permanent_watts,json=permanentWatts,proto3,oneof" json:"permanent_watts,omitempty"`
 	DynamicWatts           *uint32                `protobuf:"varint,49,opt,name=dynamic_watts,json=dynamicWatts,proto3,oneof" json:"dynamic_watts,omitempty"`
@@ -448,11 +448,11 @@ func (x *InverterHeartbeat) GetPv2RelayStatus() int32 {
 	return 0
 }
 
-func (x *InverterHeartbeat) GetInstallCountry() uint32 {
+func (x *InverterHeartbeat) GetInstallCountry() string {
 	if x != nil && x.InstallCountry != nil {
 		return *x.InstallCountry
 	}
-	return 0
+	return ""
 }
 
 func (x *InverterHeartbeat) GetInstallTown() uint32 {
@@ -1268,7 +1268,7 @@ const file_powerstream_proto_rawDesc = "" +
 	"\x10inv_relay_status\x18+ \x01(\x05H*R\x0einvRelayStatus\x88\x01\x01\x12-\n" +
 	"\x10pv1_relay_status\x18, \x01(\x05H+R\x0epv1RelayStatus\x88\x01\x01\x12-\n" +
 	"\x10pv2_relay_status\x18- \x01(\x05H,R\x0epv2RelayStatus\x88\x01\x01\x12,\n" +
-	"\x0finstall_country\x18. \x01(\rH-R\x0einstallCountry\x88\x01\x01\x12&\n" +
+	"\x0finstall_country\x18. \x01(\tH-R\x0einstallCountry\x88\x01\x01\x12&\n" +
 	"\finstall_town\x18/ \x01(\rH.R\vinstallTown\x88\x01\x01\x12,\n" +
 	"\x0fpermanent_watts\x180 \x01(\rH/R\x0epermanentWatts\x88\x01\x01\x12(\n" +
 	"\rdynamic_watts\x181 \x01(\rH0R\fdynamicWatts\x88\x01\x01\x12,\n" +

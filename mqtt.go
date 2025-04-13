@@ -42,8 +42,9 @@ var quit = make(chan struct{})
 var mqttid common.RegDbID
 
 type statMqtt struct {
-	mu      sync.Mutex
-	counter uint64
+	mu          sync.Mutex
+	mqttCounter uint64
+	httpCounter uint64
 }
 
 var mapStatMqtt = make(map[string]*statMqtt)
@@ -76,7 +77,7 @@ func InitMqtt(user, password string) {
 			case <-ticker.C:
 				fmt.Printf("Statistics:\n")
 				for k, v := range mapStatMqtt {
-					fmt.Printf("  %s got %d messages\n", k, v.counter)
+					fmt.Printf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter)
 				}
 			case <-quit:
 				ticker.Stop()
@@ -102,21 +103,26 @@ func setupGracefulShutdown(done chan bool) {
 	}()
 }
 
+func getStatEntry(serialNumber string) *statMqtt {
+	if s, ok := mapStatMqtt[serialNumber]; ok {
+		return s
+	} else {
+		stat := &statMqtt{}
+		mapStatMqtt[serialNumber] = stat
+		return stat
+	}
+
+}
+
 func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 	serialNumber := getSnFromTopic(msg.Topic())
-	var stat *statMqtt
-	if s, ok := mapStatMqtt[serialNumber]; ok {
-		stat = s
-	} else {
-		stat = &statMqtt{}
-		mapStatMqtt[serialNumber] = stat
-	}
+	stat := getStatEntry(serialNumber)
 	stat.mu.Lock()
 	defer stat.mu.Unlock()
 
-	stat.counter++
+	stat.mqttCounter++
 
-	fmt.Printf("Received message of %s at %v\n", serialNumber, time.Now().Format(layout))
+	log.Log.Infof("Received message of %s at %v\n", serialNumber, time.Now().Format(layout))
 
 	log.Log.Debugf("received message on topic %s; body (retain: %t):\n%s", msg.Topic(),
 		msg.Retained(), FormatByteBuffer("MQTT Body", msg.Payload()))
@@ -126,9 +132,8 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 	err := json.Unmarshal(payload, &data)
 	if err == nil {
 		log.Log.Debugf("JSON: %v", string(payload))
-		cmdId := int(data["cmdId"].(float64))
-		moduleType := data["moduleType"].(string)
 		if log.IsDebugLevel() {
+			cmdId := int(data["cmdId"].(float64))
 			log.Log.Debugf("-> CmdId   %03d", cmdId)
 			log.Log.Debugf("-> CmdFunc %f", data["cmdFunc"].(float64))
 			log.Log.Debugf("-> Version %s", data["version"].(string))
@@ -137,7 +142,13 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 		if _, ok := data["params"]; ok {
 			data = data["params"].(map[string]interface{})
 		}
-		tn := fmt.Sprintf("%s_mqtt_%03d_%s", serialNumber, cmdId, moduleType)
+		if _, ok := data["serial_number"]; !ok {
+			data["serial_number"] = serialNumber
+		}
+		if _, ok := data["timestamp"]; !ok {
+			data["timestamp"] = time.Now()
+		}
+		tn := fmt.Sprintf("%s_mqtt", serialNumber)
 		if !checkTable(mqttid, tn, func() []*common.Column {
 			keys := make([]string, 0, len(data))
 			for k := range data {
@@ -213,14 +224,17 @@ func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
 			} else {
 				columns = append(columns, val)
 			}
+		case time.Time:
+			columns = append(columns, val)
 		case []interface{}, map[string]interface{}:
-			s := fmt.Sprintf("%#v", val)
-			if len(s) > 1024 {
-				fmt.Println(" -> ", k, " size to big")
-				fmt.Println(s)
-				log.Log.Fatal("Fatal error creating insert")
+			b, err := json.Marshal(val)
+			if err != nil {
+				fmt.Printf("Error marshal: %#v", val)
+				columns = append(columns, nil)
+			} else {
+				s := string(b)
+				columns = append(columns, s)
 			}
-			columns = append(columns, s)
 		default:
 			fmt.Printf("Unknown type %s=%T\n", k, v)
 			log.Log.Fatalf("Unknown type %s=%T\n", k, v)

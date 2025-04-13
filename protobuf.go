@@ -13,7 +13,6 @@ package ecoflow2db
 
 import (
 	"encoding/base64"
-	"fmt"
 	"time"
 
 	"github.com/tknie/log"
@@ -69,11 +68,9 @@ func displayPayload(sn string, payload []byte) bool {
 				}
 			}
 		default:
-			log.Log.Infof("Unknown Cmd ID %d", platform.Msg.GetCmdId())
 			displayHeader(platform.Msg)
-			fmt.Println("Unknown Cmd ID", platform.Msg.GetCmdId())
-			fmt.Printf("Base64: %s\n", base64.RawStdEncoding.EncodeToString(payload))
-			fmt.Printf("Received message: %s\n", FormatByteBuffer("MSG Payload", platform.Msg.Pdata))
+			log.Log.Infof("Unknown Cmd ID %d -> %s\n", platform.Msg.GetCmdId(), sn)
+			log.Log.Infof("Base64: %s\n", base64.RawStdEncoding.EncodeToString(payload))
 			return false
 		}
 	}

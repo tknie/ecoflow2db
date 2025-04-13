@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
-	github.com/tknie/flynn v0.9.6
+	github.com/tknie/flynn v0.9.7-0.20250413145843-8689db3e5f7f
 	github.com/tknie/log v0.1.0
 	golang.org/x/text v0.24.0
 	google.golang.org/protobuf v1.36.6
