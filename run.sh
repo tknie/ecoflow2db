@@ -4,4 +4,5 @@ LOGPATH=$(pwd)/logs
 export LOGPATH
 
 rm -f ecoflow2db.log $LOGPATH/*
-go run ./cmd/ecoflow2db 
+#go run ./cmd/ecoflow2db 
+docker/ecoflow2db
