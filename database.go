@@ -48,6 +48,7 @@ func InitDatabase() {
 	if dbPassword == "" {
 		dbPassword = os.Getenv("ECOFLOW_DB_PASS")
 	}
+	log.Log.Debugf("DB password: %s", dbPassword)
 	_, err = flynn.Handler(dbRef, dbPassword)
 	if err != nil {
 		log.Log.Fatalf("Register error log: %v", err)
