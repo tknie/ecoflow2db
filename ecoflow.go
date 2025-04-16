@@ -13,6 +13,7 @@ package ecoflow2db
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/tess1o/go-ecoflow"
@@ -32,6 +33,7 @@ func InitEcoflow() {
 	//get all linked ecoflow devices. Returns SN and online status
 	list, err := client.GetDeviceList(context.Background())
 	if err != nil {
+		fmt.Printf("Error getting device list: %v\n", err)
 		log.Log.Fatalf("Error getting device list: %v", err)
 	}
 	devices = list

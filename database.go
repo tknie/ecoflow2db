@@ -54,6 +54,7 @@ func InitDatabase() {
 	log.Log.Debugf("DB password: %s", dbPassword)
 	_, err = flynn.Handler(dbRef, dbPassword)
 	if err != nil {
+		fmt.Printf("Register database error: %v\n", err)
 		log.Log.Fatalf("Register error log: %v", err)
 	}
 	readDatabaseMaps()
@@ -69,7 +70,8 @@ func connnectDatabase() common.RegDbID {
 	log.Log.Debugf("Connected to database %s", dbRef)
 	id, err := flynn.Handler(dbRef, dbPassword)
 	if err != nil {
-		log.Log.Fatalf("Register error log: %v", err)
+		fmt.Printf("Connect database error: %v\n", err)
+		log.Log.Fatalf("Connect database error: %v", err)
 	}
 	return id
 }
@@ -88,6 +90,8 @@ func storeDatabase() {
 		if err != nil {
 			fmt.Println("Error inserting record:", err)
 			// log.Log.Fatal("Error inserting record: ", err)
+		} else {
+			getDbStatEntry(tn).counter++
 		}
 
 	}
@@ -134,6 +138,8 @@ func insertTable(storeid common.RegDbID, tn string, data map[string]interface{},
 	if err != nil {
 		fmt.Printf("Error inserting record: %v\n", err)
 		// log.Log.Fatal("Error inserting record: ", err)
+	} else {
+		getDbStatEntry(tn).counter++
 	}
 	return err
 }

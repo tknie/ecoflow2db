@@ -17,13 +17,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"os"
-	"os/signal"
 	reflect "reflect"
 	"sort"
 	"strings"
-	sync "sync"
-	"syscall"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -41,14 +37,6 @@ var quit = make(chan struct{})
 
 var mqttid common.RegDbID
 
-type statMqtt struct {
-	mu          sync.Mutex
-	mqttCounter uint64
-	httpCounter uint64
-}
-
-var mapStatMqtt = make(map[string]*statMqtt)
-
 func InitMqtt(user, password string) {
 	fmt.Println("Initialize MQTT client")
 	configuration := ecoflow.MqttClientConfiguration{
@@ -61,6 +49,7 @@ func InitMqtt(user, password string) {
 	var err error
 	ecoclient, err = ecoflow.NewMqttClient(context.Background(), configuration)
 	if err != nil {
+		fmt.Printf("Error creating MQTT client: %v\n", err)
 		log.Log.Fatalf("Error new MQTT client: %v", err)
 	}
 	mqttid = connnectDatabase()
@@ -75,9 +64,12 @@ func InitMqtt(user, password string) {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Printf("Statistics:\n")
+				fmt.Printf("Statistics at %v:\n", time.Now())
 				for k, v := range mapStatMqtt {
 					fmt.Printf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter)
+				}
+				for k, v := range mapStatDatabase {
+					fmt.Printf("  %s inserted %03d records\n", k, v.counter)
 				}
 			case <-quit:
 				ticker.Stop()
@@ -85,33 +77,6 @@ func InitMqtt(user, password string) {
 			}
 		}
 	}()
-}
-
-func setupGracefulShutdown(done chan bool) {
-	// Create a channel to listen for OS signals
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
-
-	// Goroutine to handle shutdown
-	go func() {
-		<-signalChan
-		log.Log.Infof("Received shutdown signal")
-
-		done <- true
-		endHttp()
-		close(quit)
-	}()
-}
-
-func getStatEntry(serialNumber string) *statMqtt {
-	if s, ok := mapStatMqtt[serialNumber]; ok {
-		return s
-	} else {
-		stat := &statMqtt{}
-		mapStatMqtt[serialNumber] = stat
-		return stat
-	}
-
 }
 
 func MessageHandler(_ mqtt.Client, msg mqtt.Message) {

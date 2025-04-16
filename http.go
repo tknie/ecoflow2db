@@ -69,7 +69,9 @@ func httpParameterStore(client *ecoflow.Client) {
 			fmt.Printf("Get Parameter for : %s\n", l.SN)
 			resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 			if err != nil {
-				log.Log.Fatalf("Error getting device list: %v", err)
+				fmt.Printf("Error getting device parameter sn=%s: %v\n", l.SN, err)
+				log.Log.Errorf("Error getting device parameter sn=%s: %v", l.SN, err)
+				continue
 			}
 
 			checkTable(id, "device_"+l.SN+"_quota", func() []*common.Column {
@@ -108,7 +110,8 @@ func httpParameterStore(client *ecoflow.Client) {
 					stat := getStatEntry(l.SN)
 					resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 					if err != nil {
-						log.Log.Fatalf("Error getting device list: %v", err)
+						log.Log.Errorf("Error getting device list %s: %v", l.SN, err)
+						fmt.Printf("Error getting device list %s: %v\n", l.SN, err)
 					}
 					if _, ok := resp["serial_number"]; !ok {
 						resp["serial_number"] = l.SN
@@ -160,7 +163,7 @@ func createValueColumn(name string, v interface{}) *common.Column {
 	default:
 		fmt.Printf("Unknown type %s=%T\n", name, v)
 	}
-	log.Log.Fatalf("Unknown type %s=%T\n", name, v)
+	log.Log.Errorf("Unknown type %s=%T\n", name, v)
 	return nil
 }
 
@@ -224,7 +227,7 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 			}
 		default:
 			fmt.Printf("Unknown type %s=%T\n", k, v)
-			log.Log.Fatalf("Unknown type %s=%T\n", k, v)
+			log.Log.Errorf("Unknown type %s=%T\n", k, v)
 		}
 	}
 	return fields, [][]any{columns}
