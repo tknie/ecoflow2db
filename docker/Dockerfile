@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN  apk update && apk upgrade
+RUN  apk update && apk upgrade && apk add gcompat
 
 COPY ecoflow2db /ecoflow2db/bin/
 COPY docker-entrypoint.sh /
