@@ -14,7 +14,6 @@ package ecoflow2db
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"math"
 	"net/http"
 	"os"
@@ -173,7 +172,7 @@ func createValueColumn(name string, v interface{}) *common.Column {
 func checkTableColumns(id common.RegDbID, tn string, data map[string]interface{}) {
 	col, err := id.GetTableColumn(tn)
 	if err != nil {
-		fmt.Println("Get table column", err)
+		services.ServerMessage("Get table column %v", err)
 		return
 	}
 	log.Log.Debugf("Validate to defined columns %#v", col)

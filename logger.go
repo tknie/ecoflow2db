@@ -12,7 +12,6 @@
 package ecoflow2db
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -24,7 +23,6 @@ import (
 var logRus = logrus.StandardLogger()
 
 func StartLog(fileName string) {
-	services.ServerMessage("Init logging")
 	level := os.Getenv("ENABLE_DEBUG")
 	logLevel := logrus.WarnLevel
 	switch level {
@@ -52,11 +50,11 @@ func StartLog(fileName string) {
 	f, err := os.OpenFile(path,
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
-		fmt.Println("Error opening log file:", err)
+		services.ServerMessage("Error opening log file: %s", err)
 		return
 	}
 	logRus.SetOutput(f)
 	logRus.Infof("Init logrus")
 	tlog.Log = logRus
-	services.ServerMessage("Logging initiated with %v...", logRus.Level)
+	services.ServerMessage("Logging initiated with '%v' level...", logRus.Level)
 }

@@ -39,7 +39,7 @@ var quit = make(chan struct{})
 var mqttid common.RegDbID
 
 func InitMqtt(user, password string) {
-	fmt.Println("Initialize MQTT client")
+	services.ServerMessage("Initialize MQTT client")
 	configuration := ecoflow.MqttClientConfiguration{
 		Email:            user,
 		Password:         password,
@@ -226,7 +226,7 @@ func displayHeader(msg *Header) {
 
 func OnConnect(client mqtt.Client) {
 	for _, d := range devices.Devices {
-		services.ServerMessage("Subscribe for MQTT entries of %s", d.SN)
+		services.ServerMessage("Subscribe for MQTT entries of device %s", d.SN)
 		err := ecoclient.SubscribeForParameters(d.SN, MessageHandler)
 		if err != nil {
 			log.Log.Errorf("Unable to subscribe for parameters %s: %v", d.SN, err)
