@@ -12,7 +12,6 @@
 package ecoflow2db
 
 import (
-	"fmt"
 	"os"
 	"runtime/debug"
 	"slices"
@@ -21,6 +20,7 @@ import (
 	"github.com/tknie/flynn"
 	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 var dbTables []string
@@ -54,7 +54,7 @@ func InitDatabase() {
 	log.Log.Debugf("DB password: %s", dbPassword)
 	_, err = flynn.Handler(dbRef, dbPassword)
 	if err != nil {
-		fmt.Printf("Register database error: %v\n", err)
+		services.ServerMessage("Shuting down ... register database error: %v", err)
 		log.Log.Fatalf("Register error log: %v", err)
 	}
 	readDatabaseMaps()
@@ -70,7 +70,7 @@ func connnectDatabase() common.RegDbID {
 	log.Log.Debugf("Connected to database %s", dbRef)
 	id, err := flynn.Handler(dbRef, dbPassword)
 	if err != nil {
-		fmt.Printf("Connect database error: %v\n", err)
+		services.ServerMessage("Shuting down, connect database error: %v", err)
 		log.Log.Fatalf("Connect database error: %v", err)
 	}
 	return id
@@ -88,7 +88,10 @@ func storeDatabase() {
 		insert.Values = [][]any{{m.object}}
 		_, err := storeid.Insert(tn, insert)
 		if err != nil {
-			fmt.Println("Error inserting record:", err)
+			services.ServerMessage("Error inserting record: %v", err)
+			// Reconnecting ...
+			storeid.Close()
+			storeid = connnectDatabase()
 			// log.Log.Fatal("Error inserting record: ", err)
 		} else {
 			getDbStatEntry(tn).counter++
@@ -100,7 +103,7 @@ func storeDatabase() {
 func (m *storeElement) checkTable(storeid common.RegDbID) string {
 	tn := strings.ToLower(tableName + "_" + m.sn + "_" + getType(m.object))
 	if !slices.Contains(dbTables, tn) {
-		fmt.Printf("Database %s needed to be created\n", tn)
+		services.ServerMessage("Database %s needed to be created", tn)
 		err := storeid.CreateTable(tn, m.object)
 		if err != nil {
 			log.Log.Fatal("Error creating database table: ", err)
@@ -112,10 +115,10 @@ func (m *storeElement) checkTable(storeid common.RegDbID) string {
 
 func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*common.Column) bool {
 	if !slices.Contains(dbTables, strings.ToLower(tn)) {
-		fmt.Printf("Database %s needed to be created\n", tn)
+		services.ServerMessage("Database %s needed to be created", tn)
 		err := storeid.CreateTable(tn, generateColumns())
 		if err != nil {
-			fmt.Printf("Error creating database for %s : %v\n", tn, err)
+			services.ServerMessage("Shuting down ... error creating database for %s : %v", tn, err)
 			log.Log.Fatal("Error creating database table: ", err)
 		}
 		readDatabaseMaps()
@@ -125,7 +128,6 @@ func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*com
 }
 
 func insertTable(storeid common.RegDbID, tn string, data map[string]interface{}, generateColumns func(map[string]interface{}) ([]string, [][]any)) error {
-
 	fields, values := generateColumns(data)
 	log.Log.Debugf("Insert columnFields: %#v", fields)
 	if len(fields) == 0 {
@@ -136,7 +138,7 @@ func insertTable(storeid common.RegDbID, tn string, data map[string]interface{},
 		Fields: fields}
 	_, err := storeid.Insert(tn, insert)
 	if err != nil {
-		fmt.Printf("Error inserting record: %v\n", err)
+		services.ServerMessage("Error inserting record: %v\n", err)
 		// log.Log.Fatal("Error inserting record: ", err)
 	} else {
 		getDbStatEntry(tn).counter++

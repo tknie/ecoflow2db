@@ -26,11 +26,12 @@ import (
 	"github.com/tess1o/go-ecoflow"
 	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 const layout = "2006-01-02 15:04:05.000"
 
-var LoopSeconds = 60
+var LoopMinutes = 1
 var httpDone = make(chan bool, 1)
 
 func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
@@ -66,10 +67,10 @@ func httpParameterStore(client *ecoflow.Client) {
 			// 	log.Log.Fatalf("Error getting device list: %v", err)
 			// }
 			// get all parameters for device
-			fmt.Printf("Get Parameter for : %s\n", l.SN)
+			services.ServerMessage("Get Parameter for : %s", l.SN)
 			resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 			if err != nil {
-				fmt.Printf("Error getting device parameter sn=%s: %v\n", l.SN, err)
+				services.ServerMessage("Error getting device parameter sn=%s: %v", l.SN, err)
 				log.Log.Errorf("Error getting device parameter sn=%s: %v", l.SN, err)
 				continue
 			}
@@ -102,7 +103,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		select {
 		case <-httpDone:
 			return
-		case <-time.After(time.Second * time.Duration(LoopSeconds)):
+		case <-time.After(time.Minute * time.Duration(LoopMinutes)):
 
 			for _, l := range devices.Devices {
 				if l.Online == 1 {
@@ -111,7 +112,7 @@ func httpParameterStore(client *ecoflow.Client) {
 					resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 					if err != nil {
 						log.Log.Errorf("Error getting device list %s: %v", l.SN, err)
-						fmt.Printf("Error getting device list %s: %v\n", l.SN, err)
+						services.ServerMessage("Error getting device list %s: %v", l.SN, err)
 					}
 					if _, ok := resp["serial_number"]; !ok {
 						resp["serial_number"] = l.SN
@@ -151,7 +152,7 @@ func createValueColumn(name string, v interface{}) *common.Column {
 	case []interface{}, map[string]interface{}:
 		b, err := json.Marshal(val)
 		if err != nil {
-			fmt.Printf("Error marshal: %#v", val)
+			services.ServerMessage("Error marshal: %#v", val)
 			return nil
 		}
 		s := string(b)
@@ -161,7 +162,7 @@ func createValueColumn(name string, v interface{}) *common.Column {
 		}
 		return &common.Column{Name: name, DataType: common.Alpha, Length: l}
 	default:
-		fmt.Printf("Unknown type %s=%T\n", name, v)
+		services.ServerMessage("Unknown type %s=%T", name, v)
 	}
 	log.Log.Errorf("Unknown type %s=%T\n", name, v)
 	return nil
@@ -220,13 +221,13 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 		case []interface{}, map[string]interface{}:
 			b, err := json.Marshal(val)
 			if err != nil {
-				fmt.Printf("Error marshal: %#v", val)
+				services.ServerMessage("Error marshal: %#v", val)
 			} else {
 				s := string(b)
 				columns = append(columns, s)
 			}
 		default:
-			fmt.Printf("Unknown type %s=%T\n", k, v)
+			services.ServerMessage("Unknown HTTP JSON type %s=%T", k, v)
 			log.Log.Errorf("Unknown type %s=%T\n", k, v)
 		}
 	}

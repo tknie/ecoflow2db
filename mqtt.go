@@ -26,6 +26,7 @@ import (
 	"github.com/tess1o/go-ecoflow"
 	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 var ecoclient *ecoflow.MqttClient
@@ -49,28 +50,30 @@ func InitMqtt(user, password string) {
 	var err error
 	ecoclient, err = ecoflow.NewMqttClient(context.Background(), configuration)
 	if err != nil {
-		fmt.Printf("Error creating MQTT client: %v\n", err)
+		services.ServerMessage("Shuting down ... error creating MQTT client: %v", err)
 		log.Log.Fatalf("Error new MQTT client: %v", err)
 	}
 	mqttid = connnectDatabase()
 	log.Log.Debugf("Strt mqtt Ecoflow connect")
-	fmt.Println("Connecting MQTT client")
+	services.ServerMessage("Connecting MQTT client")
 	ecoclient.Connect()
 	log.Log.Debugf("Wait for Ecoflow disconnect")
-	fmt.Println("Waiting for MQTT data")
+	services.ServerMessage("Waiting for MQTT data")
 
 	ticker := time.NewTicker(1 * time.Minute)
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Printf("Statistics at %v:\n", time.Now())
+				var buffer bytes.Buffer
+				buffer.WriteString(fmt.Sprintf("Statistics at %v:\n", time.Now()))
 				for k, v := range mapStatMqtt {
-					fmt.Printf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter)
+					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
 				}
 				for k, v := range mapStatDatabase {
-					fmt.Printf("  %s inserted %03d records\n", k, v.counter)
+					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
 				}
+				services.ServerMessage(buffer.String())
 			case <-quit:
 				ticker.Stop()
 				return
@@ -175,8 +178,6 @@ func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
 	fields := make([]string, 0)
 	for _, k := range keys {
 		v := data[k]
-		// prefix = strings.Split(k, ".")[0]
-		// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
 		name := "eco_" + strings.ReplaceAll(k, ".", "_")
 		fields = append(fields, name)
 		log.Log.Debugf(" %s=%v %T -> %s\n", k, v, v, name)
@@ -194,14 +195,14 @@ func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
 		case []interface{}, map[string]interface{}:
 			b, err := json.Marshal(val)
 			if err != nil {
-				fmt.Printf("Error marshal: %#v", val)
+				services.ServerMessage("Error marshal: %#v", val)
 				columns = append(columns, nil)
 			} else {
 				s := string(b)
 				columns = append(columns, s)
 			}
 		default:
-			fmt.Printf("Unknown type %s=%T\n", k, v)
+			services.ServerMessage("Unknown type %s=%T\n", k, v)
 			log.Log.Fatalf("Unknown type %s=%T\n", k, v)
 		}
 	}

@@ -13,11 +13,11 @@ package ecoflow2db
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/tess1o/go-ecoflow"
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 func InitEcoflow() {
@@ -33,7 +33,7 @@ func InitEcoflow() {
 	//get all linked ecoflow devices. Returns SN and online status
 	list, err := client.GetDeviceList(context.Background())
 	if err != nil {
-		fmt.Printf("Error getting device list: %v\n", err)
+		services.ServerMessage("Shutdown ... error getting device list: %v", err)
 		log.Log.Fatalf("Error getting device list: %v", err)
 	}
 	devices = list

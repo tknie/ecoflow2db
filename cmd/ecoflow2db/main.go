@@ -13,9 +13,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/tknie/ecoflow2db"
+	"github.com/tknie/services"
 )
 
 func init() {
@@ -25,20 +25,13 @@ func init() {
 func main() {
 	create := false
 
-	flag.IntVar(&ecoflow2db.LoopSeconds, "t", 1, "The seconds between REST API queries")
+	flag.IntVar(&ecoflow2db.LoopMinutes, "t", 1, "The minutes between REST API queries")
 	flag.BoolVar(&create, "create", false, "Create new database")
 	flag.Parse()
 
-	fmt.Printf("Start ecoflow2db application v%s (build at %v)\n", ecoflow2db.Version, ecoflow2db.BuildDate)
+	services.ServerMessage("Start ecoflow2db application v%s (build at %v)", ecoflow2db.Version, ecoflow2db.BuildDate)
+	services.ServerMessage("Loop in API each %d minutes", ecoflow2db.LoopMinutes)
 	ecoflow2db.InitDatabase()
-	// creating new client with options. Current supports two options:
-	// 1. custom ecoflow base url (can be used with proxies, or if they change the url)
-	// 2. custom http client
-
-	// client = ecoflow.NewEcoflowClient(accessKey, secretKey,
-	//	ecoflow.WithBaseUrl("https://ecoflow-api.example.com"),
-	//	ecoflow.WithHttpClient(customHttpClient()),
-	//)
 	ecoflow2db.InitEcoflow()
 
 }
