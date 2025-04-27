@@ -12,14 +12,20 @@
 package ecoflow2db
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/tess1o/go-ecoflow"
 	"github.com/tknie/log"
 	"github.com/tknie/services"
 )
 
+var quit = make(chan struct{})
+
+// InitEcoflow init ecoflow MQTT
 func InitEcoflow() {
 	user := os.Getenv("ECOFLOW_USER")
 	password := os.Getenv("ECOFLOW_PASSWORD")
@@ -38,10 +44,33 @@ func InitEcoflow() {
 	}
 	devices = list
 
+	// Start statistics output
 	triggerParameterStore(client)
+	ticker := time.NewTicker(1 * time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				var buffer bytes.Buffer
+				buffer.WriteString("Statistics:\n")
+				for k, v := range mapStatMqtt {
+					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
+				}
+				for k, v := range mapStatDatabase {
+					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
+				}
+				services.ServerMessage(buffer.String())
+			case <-quit:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 
 	done := make(chan bool, 1)
 	setupGracefulShutdown(done)
-	InitMqtt(user, password)
+	if !MqttDisable {
+		InitMqtt(user, password)
+	}
 	<-done
 }

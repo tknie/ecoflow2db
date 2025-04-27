@@ -22,6 +22,7 @@ import (
 
 var logRus = logrus.StandardLogger()
 
+// StartLog start log storage with given filename
 func StartLog(fileName string) {
 	level := os.Getenv("ENABLE_DEBUG")
 	logLevel := logrus.WarnLevel

@@ -34,10 +34,11 @@ var ecoclient *ecoflow.MqttClient
 var devices *ecoflow.DeviceListResponse
 var tableName string
 
-var quit = make(chan struct{})
-
 var mqttid common.RegDbID
 
+var MqttDisable = false
+
+// InitMqtt initialize MQTT listener
 func InitMqtt(user, password string) {
 	services.ServerMessage("Initialize MQTT client")
 	configuration := ecoflow.MqttClientConfiguration{
@@ -60,28 +61,9 @@ func InitMqtt(user, password string) {
 	log.Log.Debugf("Wait for Ecoflow disconnect")
 	services.ServerMessage("Waiting for MQTT data")
 
-	ticker := time.NewTicker(1 * time.Minute)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				var buffer bytes.Buffer
-				buffer.WriteString("Statistics:\n")
-				for k, v := range mapStatMqtt {
-					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
-				}
-				for k, v := range mapStatDatabase {
-					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
-				}
-				services.ServerMessage(buffer.String())
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
 }
 
+// MessageHandler message handle called if MQTT event entered
 func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 	serialNumber := getSnFromTopic(msg.Topic())
 	stat := getStatEntry(serialNumber)
@@ -224,6 +206,7 @@ func displayHeader(msg *Header) {
 	log.Log.Infof("-> NeedAcl %d\n", msg.GetNeedAck())
 }
 
+// OnConnect on connect open handler called if connetion is done
 func OnConnect(client mqtt.Client) {
 	for _, d := range devices.Devices {
 		services.ServerMessage("Subscribe for MQTT entries of device %s", d.SN)
@@ -244,11 +227,14 @@ func getType(myvar interface{}) string {
 	}
 }
 
+// OnConnectionLost on connection lost happened
 func OnConnectionLost(_ mqtt.Client, err error) {
-	log.Log.Debugf("Error connection lost: %v", err)
+	log.Log.Errorf("Error connection lost: %v", err)
 }
+
+// OnReconnect on connection reconnection
 func OnReconnect(mqtt.Client, *mqtt.ClientOptions) {
-	log.Log.Debugf("Reconnecting...")
+	log.Log.Infof("Reconnecting...")
 }
 
 func getSnFromTopic(topic string) string {

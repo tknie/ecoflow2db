@@ -39,6 +39,7 @@ func main() {
 	}
 
 	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.LoopSeconds, "The minutes between REST API queries")
+	flag.BoolVar(&ecoflow2db.MqttDisable, "m", false, "Disable MQTT listener")
 	flag.BoolVar(&create, "create", false, "Create new database")
 	flag.Parse()
 

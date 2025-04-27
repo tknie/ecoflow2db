@@ -38,6 +38,7 @@ func init() {
 	tableName = os.Getenv("ECOFLOW_DB_TABLENAME")
 }
 
+// InitDatabase init database connections
 func InitDatabase() {
 	databaseUrl := os.Getenv("ECOFLOW_DB_URL")
 	var err error
