@@ -29,7 +29,7 @@ func main() {
 	create := false
 	ecoflow2db.LoopSeconds = ecoflow2db.DefaultSeconds
 	seconds := os.Getenv("ECOFLOW2DB_WAIT_SECONDS")
-	if seconds == "" {
+	if seconds != "" {
 		sec, err := strconv.Atoi(seconds)
 		if err != nil {
 			services.ServerMessage("Invalid wait seconds given, use default %d seconds", ecoflow2db.LoopSeconds)
