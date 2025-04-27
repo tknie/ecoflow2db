@@ -40,5 +40,18 @@ docker pull thknie/ecoflow2db:tagname
 
 See the example script showing how to start the service with podman. Located is the script in this repostiory at [docker/podstart.sh](docker/podstart.sh).
 
+## Usage in Grafana
+
+In Grafana accessing the data source containing the data received by two input sources
+
+- First sources comes from [mqtt2db](https://github.com/tknie/mqtt2db). This tool receives Tasmota electric meter data using an Mosquitto MQTT server and store it in database
+- Second sources comes from [ecoflow2db](https://github.com/tknie/ecoflow2db) using the Ecoflow API receiving Solar panel and inverter statistics and store it in the same database
+
+Both data are containing a wide range of statistic data which can be presented inside an Grafana Dashboard:
+
+![Grafana Dashboard example](images/Grafana-power-statistics.png)
+
+![Grafana Dashboard example](images/Grafana-solar-statistics.png)
+
 ______________________
 These tools are provided as-is and without warranty or support. Users are free to use, fork and modify them, subject to the license agreement.
