@@ -30,7 +30,7 @@ import (
 
 const layout = "2006-01-02 15:04:05.000"
 
-const DefaultSeconds = 10
+const DefaultSeconds = 60
 
 var LoopSeconds = DefaultSeconds
 var httpDone = make(chan bool, 1)
