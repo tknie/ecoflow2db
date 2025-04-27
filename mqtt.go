@@ -226,7 +226,7 @@ func displayHeader(msg *Header) {
 
 func OnConnect(client mqtt.Client) {
 	for _, d := range devices.Devices {
-		fmt.Println("Subscribe MQTT entries for", d.SN)
+		services.ServerMessage("Subscribe for MQTT entries of %s", d.SN)
 		err := ecoclient.SubscribeForParameters(d.SN, MessageHandler)
 		if err != nil {
 			log.Log.Errorf("Unable to subscribe for parameters %s: %v", d.SN, err)
