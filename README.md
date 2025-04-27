@@ -17,16 +17,15 @@ In advance the application can listen for MQTT events. Unfortunately the MQTT is
 
 Variables | Default | Description
 ---------|----------|---------
- ECOFLOW_USER |  | C1
- ECOFLOW_PASSWORD |  | C2
- ECOFLOW_DEVICE_SN |  | C3
- ECOFLOW_ACCESS_KEY |  | C3
- ECOFLOW_SECRET_KEY |  | C3
- ECOFLOW_DB_URL |  | C3
- ECOFLOW_DB_USER |  | C3
- ECOFLOW_DB_PASS |  | C3
- LOGPATH |  | C3
- ECOFLOW2DB_WAIT_SECONDS | 30 | C3
+ ECOFLOW_USER |  | Ecoflow API user
+ ECOFLOW_PASSWORD |  | Ecoflow API password
+ ECOFLOW_ACCESS_KEY |  | Ecoflow access key created in Ecoflow API
+ ECOFLOW_SECRET_KEY |  | Ecoflow secret key created in Ecoflow API
+ ECOFLOW_DB_URL |  | Postgres database URL used to store data
+ ECOFLOW_DB_USER |  | Postgres user name
+ ECOFLOW_DB_PASS |  | Postgres user password
+ LOGPATH |  | Directory for log trace file
+ ECOFLOW2DB_WAIT_SECONDS | 30 | Time in seconds waiting between a loop reading statistic data in Ecoflow API
 
 ## Docker environment
 
