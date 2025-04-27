@@ -1,5 +1,12 @@
 # Ecoflow2db application
 
+- [Ecoflow2db application](#ecoflow2db-application)
+  - [Introduction](#introduction)
+  - [Environment variables](#environment-variables)
+  - [Build](#build)
+  - [Docker environment](#docker-environment)
+  - [Usage in Grafana](#usage-in-grafana)
+
 ## Introduction
 
 This application named Ecoflow2db is used to query Ecoflow API getting current configuration and Solar data information and generate corresponding database tables in the Postgres database.
