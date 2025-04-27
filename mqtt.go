@@ -54,7 +54,7 @@ func InitMqtt(user, password string) {
 		log.Log.Fatalf("Error new MQTT client: %v", err)
 	}
 	mqttid = connnectDatabase()
-	log.Log.Debugf("Strt mqtt Ecoflow connect")
+	log.Log.Debugf("Connecting MQTT Ecoflow connect")
 	services.ServerMessage("Connecting MQTT client")
 	ecoclient.Connect()
 	log.Log.Debugf("Wait for Ecoflow disconnect")
@@ -66,7 +66,7 @@ func InitMqtt(user, password string) {
 			select {
 			case <-ticker.C:
 				var buffer bytes.Buffer
-				buffer.WriteString(fmt.Sprintf("Statistics at %v:\n", time.Now()))
+				buffer.WriteString("Statistics:\n")
 				for k, v := range mapStatMqtt {
 					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
 				}
