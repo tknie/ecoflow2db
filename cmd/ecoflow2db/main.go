@@ -25,12 +25,12 @@ func init() {
 func main() {
 	create := false
 
-	flag.IntVar(&ecoflow2db.LoopMinutes, "t", 1, "The minutes between REST API queries")
+	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.DefaultSeconds, "The minutes between REST API queries")
 	flag.BoolVar(&create, "create", false, "Create new database")
 	flag.Parse()
 
 	services.ServerMessage("Start ecoflow2db application v%s (build at %v)", ecoflow2db.Version, ecoflow2db.BuildDate)
-	services.ServerMessage("Loop in API each %d minutes", ecoflow2db.LoopMinutes)
+	services.ServerMessage("Loop in API each %d seconds", ecoflow2db.LoopSeconds)
 	ecoflow2db.InitDatabase()
 	ecoflow2db.InitEcoflow()
 

@@ -31,7 +31,9 @@ import (
 
 const layout = "2006-01-02 15:04:05.000"
 
-var LoopMinutes = 1
+const DefaultSeconds = 10
+
+var LoopSeconds = DefaultSeconds
 var httpDone = make(chan bool, 1)
 
 func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
@@ -103,7 +105,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		select {
 		case <-httpDone:
 			return
-		case <-time.After(time.Minute * time.Duration(LoopMinutes)):
+		case <-time.After(time.Second * time.Duration(LoopSeconds)):
 
 			for _, l := range devices.Devices {
 				if l.Online == 1 {

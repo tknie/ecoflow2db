@@ -2,4 +2,4 @@ logs/
 mqtt
 *.log
 .DS_Store
-ecoflow2db
+docker/ecoflow2db
