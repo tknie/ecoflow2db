@@ -27,6 +27,14 @@ Variables | Default | Description
  LOGPATH |  | Directory for log trace file
  ECOFLOW2DB_WAIT_SECONDS | 30 | Time in seconds waiting between a loop reading statistic data in Ecoflow API
 
+## Build
+
+The `ecoflow2db` application is written in Golang. The tool can be build with
+
+```sh
+build.sh
+```
+
 ## Docker environment
 
 The Ecoflow2db application and corresponding Postgres database is running in an Raspberry Pi.
