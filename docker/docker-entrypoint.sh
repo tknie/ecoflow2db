@@ -15,4 +15,8 @@
 LOGFILE=/ecoflow2db/log/
 export LOGFILE
 
+# default log level set to info
+ENABLE_DEBUG=${ENABLE_DEBUG:-info}
+export ENABLE_DEBUG
+
 /ecoflow2db/bin/ecoflow2db
