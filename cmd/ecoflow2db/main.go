@@ -15,6 +15,7 @@ import (
 	"flag"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/tknie/ecoflow2db"
 	"github.com/tknie/services"
@@ -37,11 +38,14 @@ func main() {
 			ecoflow2db.LoopSeconds = sec
 		}
 	}
-
-	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.LoopSeconds, "The minutes between REST API queries")
+	statSecs := 0
+	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.LoopSeconds, "The seconds wating between REST API queries")
+	flag.IntVar(&statSecs, "s", int(ecoflow2db.StatLoopMinutes), "The minutes waiting between statistics output")
 	flag.BoolVar(&ecoflow2db.MqttDisable, "m", false, "Disable MQTT listener")
 	flag.BoolVar(&create, "create", false, "Create new database")
 	flag.Parse()
+
+	ecoflow2db.StatLoopMinutes = time.Duration(statSecs)
 
 	services.ServerMessage("Loop in API each %d seconds", ecoflow2db.LoopSeconds)
 	ecoflow2db.InitDatabase()

@@ -26,6 +26,8 @@ type statMqtt struct {
 	httpCounter uint64
 }
 
+var StatLoopMinutes = time.Duration(5)
+
 var mapStatMqtt = make(map[string]*statMqtt)
 
 type statDatabase struct {
@@ -56,7 +58,7 @@ func getDbStatEntry(tn string) *statDatabase {
 }
 
 func startStatLoop() {
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(StatLoopMinutes * time.Minute)
 	go func() {
 		for {
 			select {
