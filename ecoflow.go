@@ -62,6 +62,7 @@ func InitEcoflow() {
 				services.ServerMessage(buffer.String())
 			case <-quit:
 				ticker.Stop()
+				services.ServerMessage("Statistics are stopped")
 				return
 			}
 		}

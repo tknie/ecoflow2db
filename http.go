@@ -103,6 +103,8 @@ func httpParameterStore(client *ecoflow.Client) {
 		counter++
 		select {
 		case <-httpDone:
+			services.ServerMessage("Ecoflow API loop is stopped")
+
 			return
 		case <-time.After(time.Second * time.Duration(LoopSeconds)):
 

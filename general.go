@@ -17,6 +17,7 @@ import (
 	"syscall"
 
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 func setupGracefulShutdown(done chan bool) {
@@ -28,6 +29,7 @@ func setupGracefulShutdown(done chan bool) {
 	go func() {
 		<-signalChan
 		log.Log.Infof("Received shutdown signal")
+		services.ServerMessage("Shutdown signal received")
 
 		done <- true
 		endHttp()
