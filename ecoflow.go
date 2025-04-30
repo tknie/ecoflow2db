@@ -12,11 +12,8 @@
 package ecoflow2db
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/tess1o/go-ecoflow"
 	"github.com/tknie/log"
@@ -46,27 +43,7 @@ func InitEcoflow() {
 
 	// Start statistics output
 	triggerParameterStore(client)
-	ticker := time.NewTicker(1 * time.Minute)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				var buffer bytes.Buffer
-				buffer.WriteString("Statistics:\n")
-				for k, v := range mapStatMqtt {
-					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
-				}
-				for k, v := range mapStatDatabase {
-					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
-				}
-				services.ServerMessage(buffer.String())
-			case <-quit:
-				ticker.Stop()
-				services.ServerMessage("Statistics are stopped")
-				return
-			}
-		}
-	}()
+	startStatLoop()
 
 	done := make(chan bool, 1)
 	setupGracefulShutdown(done)

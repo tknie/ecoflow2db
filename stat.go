@@ -11,7 +11,14 @@
 
 package ecoflow2db
 
-import sync "sync"
+import (
+	"bytes"
+	"fmt"
+	sync "sync"
+	"time"
+
+	"github.com/tknie/services"
+)
 
 type statMqtt struct {
 	mu          sync.Mutex
@@ -46,4 +53,29 @@ func getDbStatEntry(tn string) *statDatabase {
 		mapStatDatabase[tn] = stat
 		return stat
 	}
+}
+
+func startStatLoop() {
+	ticker := time.NewTicker(1 * time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				var buffer bytes.Buffer
+				buffer.WriteString("Statistics:\n")
+				for k, v := range mapStatMqtt {
+					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
+				}
+				for k, v := range mapStatDatabase {
+					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
+				}
+				services.ServerMessage(buffer.String())
+			case <-quit:
+				ticker.Stop()
+				services.ServerMessage("Statistics are stopped")
+				return
+			}
+		}
+	}()
+
 }
