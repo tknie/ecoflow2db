@@ -27,12 +27,12 @@ func setupGracefulShutdown(done chan bool) {
 
 	// Goroutine to handle shutdown
 	go func() {
-		<-signalChan
-		log.Log.Infof("Received shutdown signal")
-		services.ServerMessage("Shutdown signal received")
+		s := <-signalChan
+		log.Log.Errorf("Received shutdown signal: %s", s)
+		services.ServerMessage("Shutdown signal received: %s", s)
 
-		done <- true
 		endHttp()
 		close(quit)
+		done <- true
 	}()
 }

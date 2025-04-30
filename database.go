@@ -44,6 +44,7 @@ func InitDatabase() {
 	var err error
 	dbRef, dbPassword, err = common.NewReference(databaseUrl)
 	if err != nil {
+		services.ServerMessage("Shuting down ... URL is incorrect: %v", err)
 		log.Log.Fatalf("REST audit URL incorrect: " + databaseUrl)
 	}
 	if dbRef.User == "" {
