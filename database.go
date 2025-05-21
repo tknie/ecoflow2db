@@ -65,7 +65,7 @@ func InitDatabase() {
 
 func readDatabaseMaps() {
 	dbTables = flynn.Maps()
-	log.Log.Infof("Tables: %#v", dbTables)
+	log.Log.Debugf("Tables: %#v", dbTables)
 }
 
 func connnectDatabase() common.RegDbID {
@@ -83,7 +83,7 @@ func storeDatabase() {
 	for m := range msgChan {
 		tn := m.checkTable(storeid)
 
-		log.Log.Infof("Insert structFields: %T into tn", m.object)
+		log.Log.Debugf("Insert structFields: %T into tn", m.object)
 		fields := []string{"*"}
 		insert := &common.Entries{DataStruct: m.object,
 			Fields: fields}

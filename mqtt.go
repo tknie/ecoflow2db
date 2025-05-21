@@ -72,7 +72,7 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 
 	stat.mqttCounter++
 
-	log.Log.Infof("Received message of %s at %v\n", serialNumber, time.Now().Format(layout))
+	log.Log.Infof("Received message of device %s at %v\n", serialNumber, time.Now().Format(layout))
 
 	log.Log.Debugf("received message on topic %s; body (retain: %t):\n%s", msg.Topic(),
 		msg.Retained(), FormatByteBuffer("MQTT Body", msg.Payload()))
@@ -192,18 +192,21 @@ func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
 }
 
 func displayHeader(msg *Header) {
-	log.Log.Infof("-> Header  %s\n", msg)
-	log.Log.Infof("-> SM      %s\n", msg.GetDeviceSn())
-	log.Log.Infof("-> Version %d\n", msg.GetVersion())
-	log.Log.Infof("-> PayloadVersion %d\n", msg.GetPayloadVer())
-	log.Log.Infof("-> SRC     %d\n", msg.GetSrc())
-	log.Log.Infof("-> Dest    %d\n", msg.GetDest())
-	log.Log.Infof("-> Datalen %d\n", msg.GetDataLen())
-	log.Log.Infof("-> CmdId   %d\n", msg.GetCmdId())
-	log.Log.Infof("-> CmdFunc %d\n", msg.GetCmdFunc())
-	log.Log.Infof("-> DSRC    %d\n", msg.GetDSrc())
-	log.Log.Infof("-> DDest   %d\n", msg.GetDDest())
-	log.Log.Infof("-> NeedAcl %d\n", msg.GetNeedAck())
+	if !log.IsDebugLevel() {
+		return
+	}
+	log.Log.Debugf("-> Header  %s\n", msg)
+	log.Log.Debugf("-> SM      %s\n", msg.GetDeviceSn())
+	log.Log.Debugf("-> Version %d\n", msg.GetVersion())
+	log.Log.Debugf("-> PayloadVersion %d\n", msg.GetPayloadVer())
+	log.Log.Debugf("-> SRC     %d\n", msg.GetSrc())
+	log.Log.Debugf("-> Dest    %d\n", msg.GetDest())
+	log.Log.Debugf("-> Datalen %d\n", msg.GetDataLen())
+	log.Log.Debugf("-> CmdId   %d\n", msg.GetCmdId())
+	log.Log.Debugf("-> CmdFunc %d\n", msg.GetCmdFunc())
+	log.Log.Debugf("-> DSRC    %d\n", msg.GetDSrc())
+	log.Log.Debugf("-> DDest   %d\n", msg.GetDDest())
+	log.Log.Debugf("-> NeedAcl %d\n", msg.GetNeedAck())
 }
 
 // OnConnect on connect open handler called if connetion is done

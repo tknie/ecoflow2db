@@ -33,14 +33,7 @@ func InitEcoflow() {
 	log.Log.Debugf("AccessKey: %v", accessKey)
 	log.Log.Debugf("SecretKey: %v", secretKey)
 	client := ecoflow.NewEcoflowClient(accessKey, secretKey)
-	//get all linked ecoflow devices. Returns SN and online status
-	list, err := client.GetDeviceList(context.Background())
-	if err != nil {
-		services.ServerMessage("Shutdown ... error getting device list: %v", err)
-		log.Log.Fatalf("Error getting device list: %v", err)
-	}
-	devices = list
-
+	refreshDeviceList(client)
 	// Start statistics output
 	triggerParameterStore(client)
 	startStatLoop()
@@ -51,4 +44,26 @@ func InitEcoflow() {
 		InitMqtt(user, password)
 	}
 	<-done
+}
+
+func refreshDeviceList(client *ecoflow.Client) {
+	//get all linked ecoflow devices. Returns SN and online status
+	list, err := client.GetDeviceList(context.Background())
+	if err != nil {
+		services.ServerMessage("Shutdown ... error getting device list: %v", err)
+		log.Log.Fatalf("Error getting device list: %v", err)
+	}
+	devices = list
+}
+
+func SetEnvironmentPowerConsumption(value int) {
+	accessKey := os.Getenv("ECOFLOW_ACCESS_KEY")
+	secretKey := os.Getenv("ECOFLOW_SECRET_KEY")
+
+	log.Log.Debugf("AccessKey: %v", accessKey)
+	log.Log.Debugf("SecretKey: %v", secretKey)
+	client := ecoflow.NewEcoflowClient(accessKey, secretKey)
+
+	request := make(map[string]interface{})
+	client.SetDeviceParameter(context.Background(), request)
 }

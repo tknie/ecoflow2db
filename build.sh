@@ -12,7 +12,7 @@
 #       http://www.apache.org/licenses/LICENSE-2.0
 #
 
-VERSION=${1:-1.0.0}
+VERSION=${VERSION:-v1.0.0}
 PACKAGE=github.com/tknie/ecoflow2db
 DATE=$(date +%d-%m-%Y'_'%H:%M:%S)
 

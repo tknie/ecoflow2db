@@ -59,46 +59,45 @@ func httpParameterStore(client *ecoflow.Client) {
 	id := connnectDatabase()
 
 	for _, l := range devices.Devices {
-		if l.Online == 1 {
-			// GetDeviceAllParameters(client, l.SN)
-			// log.Log.Debugf("Parameters: %v", parameters)
-			// get param1 and param2 for device
-			// resp, err := client.GetDeviceParameters(context.Background(), l.SN, []string{"param1", "param2"})
-			// if err != nil {
-			// 	log.Log.Fatalf("Error getting device list: %v", err)
-			// }
-			// get all parameters for device
-			services.ServerMessage("Get Parameter for : %s", l.SN)
-			resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
-			if err != nil {
-				services.ServerMessage("Error getting device parameter sn=%s: %v", l.SN, err)
-				log.Log.Errorf("Error getting device parameter sn=%s: %v", l.SN, err)
-				continue
-			}
-
-			checkTable(id, "device_"+l.SN+"_quota", func() []*common.Column {
-				keys := make([]string, 0, len(resp))
-				for k := range resp {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-				columns := make([]*common.Column, 0)
-				// prefix := ""
-				for _, k := range keys {
-					v := resp[k]
-					// prefix = strings.Split(k, ".")[0]
-					// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
-					name := "eco_" + strings.ReplaceAll(k, ".", "_")
-					log.Log.Debugf("Add column %s=%v %T -> %s\n", k, v, v, name)
-					column := createValueColumn(name, v)
-					columns = append(columns, column)
-				}
-				return columns
-			})
+		// GetDeviceAllParameters(client, l.SN)
+		// log.Log.Debugf("Parameters: %v", parameters)
+		// get param1 and param2 for device
+		// resp, err := client.GetDeviceParameters(context.Background(), l.SN, []string{"param1", "param2"})
+		// if err != nil {
+		// 	log.Log.Fatalf("Error getting device list: %v", err)
+		// }
+		// get all parameters for device
+		services.ServerMessage("Get Parameter for : %s", l.SN)
+		resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
+		if err != nil {
+			services.ServerMessage("Error getting device parameter sn=%s: %v", l.SN, err)
+			log.Log.Errorf("Error getting device parameter sn=%s: %v", l.SN, err)
+			continue
 		}
+
+		checkTable(id, "device_"+l.SN+"_quota", func() []*common.Column {
+			keys := make([]string, 0, len(resp))
+			for k := range resp {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			columns := make([]*common.Column, 0)
+			// prefix := ""
+			for _, k := range keys {
+				v := resp[k]
+				// prefix = strings.Split(k, ".")[0]
+				// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
+				name := "eco_" + strings.ReplaceAll(k, ".", "_")
+				log.Log.Debugf("Add column %s=%v %T -> %s\n", k, v, v, name)
+				column := createValueColumn(name, v)
+				columns = append(columns, column)
+			}
+			return columns
+		})
 	}
 
 	counter := uint64(0)
+	needRefresh := false
 	for {
 		counter++
 		select {
@@ -109,31 +108,36 @@ func httpParameterStore(client *ecoflow.Client) {
 		case <-time.After(time.Second * time.Duration(LoopSeconds)):
 
 			for _, l := range devices.Devices {
-				if l.Online == 1 {
-					tn := "device_" + l.SN + "_quota"
-					stat := getStatEntry(l.SN)
-					resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
-					if err != nil {
-						log.Log.Errorf("Error getting device list %s: %v", l.SN, err)
-						services.ServerMessage("Error getting device list %s: %v", l.SN, err)
-					}
-					if _, ok := resp["serial_number"]; !ok {
-						resp["serial_number"] = l.SN
-					}
-					if _, ok := resp["timestamp"]; !ok {
-						resp["timestamp"] = time.Now()
-					}
-					checkTableColumns(id, tn, resp)
-					err = insertTable(id, tn, resp, insertHttpData)
-					if err != nil && strings.Contains(err.Error(), "conn closed") {
-						id.Close()
-						id = connnectDatabase()
-					}
-					stat.httpCounter++
+				tn := "device_" + l.SN + "_quota"
+				stat := getStatEntry(l.SN)
+				resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
+				if err != nil {
+					log.Log.Errorf("Error getting device list %s: %v", l.SN, err)
+					services.ServerMessage("Error getting device list %s: %v", l.SN, err)
+				}
+				if _, ok := resp["serial_number"]; !ok {
+					resp["serial_number"] = l.SN
+				}
+				if _, ok := resp["timestamp"]; !ok {
+					resp["timestamp"] = time.Now()
+				}
+				checkTableColumns(id, tn, resp)
+				err = insertTable(id, tn, resp, insertHttpData)
+				if err != nil && strings.Contains(err.Error(), "conn closed") {
+					id.Close()
+					id = connnectDatabase()
+				}
+				stat.httpCounter++
+				if l.Online != 1 {
+					services.ServerMessage(l.SN + " device is offline")
+					needRefresh = true
 				}
 			}
 		}
 		log.Log.Infof("Triggered %d. HTTP query at %s", counter, time.Now().Format(layout))
+		if needRefresh {
+			refreshDeviceList(client)
+		}
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 	sync "sync"
 	"time"
 
+	"github.com/tknie/log"
 	"github.com/tknie/services"
 )
 
@@ -64,14 +65,16 @@ func startStatLoop() {
 			select {
 			case <-ticker.C:
 				var buffer bytes.Buffer
-				buffer.WriteString("Statistics:\n")
+				buffer.WriteString("Statistics at ")
+				buffer.WriteString(time.Now().Format(layout))
+				buffer.WriteString(":\n")
 				for k, v := range mapStatMqtt {
 					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
 				}
 				for k, v := range mapStatDatabase {
 					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
 				}
-				services.ServerMessage(buffer.String())
+				log.Log.Infof(buffer.String())
 			case <-quit:
 				ticker.Stop()
 				services.ServerMessage("Statistics are stopped")
