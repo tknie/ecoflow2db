@@ -50,10 +50,10 @@ func refreshDeviceList(client *ecoflow.Client) {
 	//get all linked ecoflow devices. Returns SN and online status
 	list, err := client.GetDeviceList(context.Background())
 	if err != nil {
-		services.ServerMessage("Shutdown ... error getting device list: %v", err)
-		log.Log.Fatalf("Error getting device list: %v", err)
+		services.ServerMessage("Error getting device list: %v", err)
+	} else {
+		devices = list
 	}
-	devices = list
 }
 
 func SetEnvironmentPowerConsumption(value int) {
