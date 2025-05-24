@@ -114,23 +114,24 @@ func httpParameterStore(client *ecoflow.Client) {
 				if err != nil {
 					log.Log.Errorf("Error getting device list %s: %v", l.SN, err)
 					services.ServerMessage("Error getting device list %s: %v", l.SN, err)
-				}
-				if _, ok := resp["serial_number"]; !ok {
-					resp["serial_number"] = l.SN
-				}
-				if _, ok := resp["timestamp"]; !ok {
-					resp["timestamp"] = time.Now()
-				}
-				checkTableColumns(id, tn, resp)
-				err = insertTable(id, tn, resp, insertHttpData)
-				if err != nil && strings.Contains(err.Error(), "conn closed") {
-					id.Close()
-					id = connnectDatabase()
-				}
-				stat.httpCounter++
-				if l.Online != 1 {
-					services.ServerMessage(l.SN + " device is offline")
-					needRefresh = true
+				} else {
+					if _, ok := resp["serial_number"]; !ok {
+						resp["serial_number"] = l.SN
+					}
+					if _, ok := resp["timestamp"]; !ok {
+						resp["timestamp"] = time.Now()
+					}
+					checkTableColumns(id, tn, resp)
+					err = insertTable(id, tn, resp, insertHttpData)
+					if err != nil && strings.Contains(err.Error(), "conn closed") {
+						id.Close()
+						id = connnectDatabase()
+					}
+					stat.httpCounter++
+					if l.Online != 1 {
+						services.ServerMessage(l.SN + " device is offline")
+						needRefresh = true
+					}
 				}
 			}
 		}
