@@ -64,10 +64,11 @@ func refreshDeviceList(client *ecoflow.Client) {
 func SetEnvironmentPowerConsumption(value float64) {
 	accessKey := os.Getenv("ECOFLOW_ACCESS_KEY")
 	secretKey := os.Getenv("ECOFLOW_SECRET_KEY")
-	if value > 6000 || value < 0 {
+	if value > 600 || value < 0 {
 		services.ServerMessage("Value %f out of range in 0:1000", value)
 		return
 	}
+
 	sn := os.Getenv("ECOFLOW_DEVICE_SN")
 
 	log.Log.Debugf("AccessKey: %v", accessKey)
@@ -75,7 +76,9 @@ func SetEnvironmentPowerConsumption(value float64) {
 	client := ecoflow.NewEcoflowClient(accessKey, secretKey)
 
 	params := make(map[string]interface{})
-	params["permanentWatts"] = value
+	// Ecoflow need to set a value times by 10
+	// e.g. 200 watt needs value 2000
+	params["permanentWatts"] = value * 10
 	cmdReq := ecoflow.CmdSetRequest{
 		Id:      fmt.Sprint(time.Now().UnixMilli()),
 		CmdCode: "WN511_SET_PERMANENT_WATTS_PACK",
