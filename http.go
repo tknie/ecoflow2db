@@ -35,6 +35,8 @@ const DefaultSeconds = 60
 var LoopSeconds = DefaultSeconds
 var httpDone = make(chan bool, 1)
 
+// GetDeviceAllParameters get all device parameters for a specific device
+// Use HTTP request to get the parameter information
 func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
 	requestParams := make(map[string]interface{})
 	requestParams["sn"] = deviceSn
@@ -51,21 +53,12 @@ func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
 	return nil
 }
 
-func triggerParameterStore(client *ecoflow.Client) {
-	go httpParameterStore(client)
-}
-
+// httpParameterStore main thread reading information with HTTP request
+// and store them in the database
 func httpParameterStore(client *ecoflow.Client) {
 	id := connnectDatabase()
 
 	for _, l := range devices.Devices {
-		// GetDeviceAllParameters(client, l.SN)
-		// log.Log.Debugf("Parameters: %v", parameters)
-		// get param1 and param2 for device
-		// resp, err := client.GetDeviceParameters(context.Background(), l.SN, []string{"param1", "param2"})
-		// if err != nil {
-		// 	log.Log.Fatalf("Error getting device list: %v", err)
-		// }
 		// get all parameters for device
 		services.ServerMessage("Get Parameter for : %s", l.SN)
 		resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
@@ -75,6 +68,7 @@ func httpParameterStore(client *ecoflow.Client) {
 			continue
 		}
 
+		// Check, create and write into table
 		checkTable(id, "device_"+l.SN+"_quota", func() []*common.Column {
 			keys := make([]string, 0, len(resp))
 			for k := range resp {
@@ -96,6 +90,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		})
 	}
 
+	// Loop reading and writing data into table
 	counter := uint64(0)
 	needRefresh := false
 	for {
@@ -142,6 +137,8 @@ func httpParameterStore(client *ecoflow.Client) {
 	}
 }
 
+// createValueColumn create value columns dependent of the information
+// received by HTTP request
 func createValueColumn(name string, v interface{}) *common.Column {
 	if strings.ToLower(name) == "timestamp" {
 		return &common.Column{Name: name, DataType: common.CurrentTimestamp, Length: 8}
@@ -176,6 +173,7 @@ func createValueColumn(name string, v interface{}) *common.Column {
 	return nil
 }
 
+// checkTableColumns check if new parameters are in current request to adapt table
 func checkTableColumns(id common.RegDbID, tn string, data map[string]interface{}) {
 	col, err := id.GetTableColumn(tn)
 	if err != nil {
@@ -199,6 +197,7 @@ func checkTableColumns(id common.RegDbID, tn string, data map[string]interface{}
 	}
 }
 
+// insertHttpData prepare database data to be inserted into the database
 func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 	keys := make([]string, 0)
 	for k := range data {
@@ -242,6 +241,7 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 	return fields, [][]any{columns}
 }
 
+// endHttp end Database store of HTTP data
 func endHttp() {
 	httpDone <- true
 }

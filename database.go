@@ -34,6 +34,7 @@ type storeElement struct {
 
 var msgChan = make(chan *storeElement, 100)
 
+// init initialized tablename information
 func init() {
 	tableName = os.Getenv("ECOFLOW_DB_TABLENAME")
 }
@@ -44,7 +45,7 @@ func InitDatabase() {
 	var err error
 	dbRef, dbPassword, err = common.NewReference(databaseUrl)
 	if err != nil {
-		services.ServerMessage("Shuting down ... URL is incorrect: %v", err)
+		services.ServerMessage("Shuting down ... URL is incorrect or cannot be parsed: %v", err)
 		log.Log.Fatalf("REST audit URL incorrect: " + databaseUrl)
 	}
 	if dbRef.User == "" {
@@ -63,11 +64,13 @@ func InitDatabase() {
 	go storeDatabase()
 }
 
+// readDatabaseMaps read database tables to check for
 func readDatabaseMaps() {
 	dbTables = flynn.Maps()
 	log.Log.Debugf("Tables: %#v", dbTables)
 }
 
+// connnectDatabase connect connection to database for the corresponding storage
 func connnectDatabase() common.RegDbID {
 	log.Log.Debugf("Connected to database %s", dbRef)
 	id, err := flynn.Handler(dbRef, dbPassword)
@@ -78,6 +81,7 @@ func connnectDatabase() common.RegDbID {
 	return id
 }
 
+// storeDatabase final insert into database with device information
 func storeDatabase() {
 	storeid := connnectDatabase()
 	for m := range msgChan {
@@ -102,6 +106,7 @@ func storeDatabase() {
 	}
 }
 
+// checkTable check if table is available and if not, create it
 func (m *storeElement) checkTable(storeid common.RegDbID) string {
 	tn := strings.ToLower(tableName + "_" + m.sn + "_" + getType(m.object))
 	if !slices.Contains(dbTables, tn) {
@@ -115,6 +120,7 @@ func (m *storeElement) checkTable(storeid common.RegDbID) string {
 	return tn
 }
 
+// checkTable check table and if not available, create table
 func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*common.Column) bool {
 	if !slices.Contains(dbTables, strings.ToLower(tn)) {
 		services.ServerMessage("Database %s needed to be created", tn)
@@ -129,6 +135,7 @@ func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*com
 	return false
 }
 
+// insertTable insert data into database
 func insertTable(storeid common.RegDbID, tn string, data map[string]interface{}, generateColumns func(map[string]interface{}) ([]string, [][]any)) error {
 	fields, values := generateColumns(data)
 	log.Log.Debugf("Insert columnFields: %#v", fields)

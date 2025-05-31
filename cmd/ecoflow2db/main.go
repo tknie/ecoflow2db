@@ -39,11 +39,21 @@ func main() {
 		}
 	}
 	statSecs := 0
+	powervalue := float64(0)
+
 	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.LoopSeconds, "The seconds wating between REST API queries")
 	flag.IntVar(&statSecs, "s", int(ecoflow2db.StatLoopMinutes), "The minutes waiting between statistics output")
 	flag.BoolVar(&ecoflow2db.MqttDisable, "m", false, "Disable MQTT listener")
 	flag.BoolVar(&create, "create", false, "Create new database")
+	flag.Float64Var(&powervalue, "p", 0, "Set new power value for the power powerstream")
+
 	flag.Parse()
+
+	if powervalue > 0 {
+		services.ServerMessage("Set new power value for powerstream to %f", powervalue)
+		ecoflow2db.SetEnvironmentPowerConsumption(powervalue)
+		return
+	}
 
 	ecoflow2db.StatLoopMinutes = time.Duration(statSecs)
 

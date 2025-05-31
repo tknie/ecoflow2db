@@ -52,7 +52,7 @@ func InitMqtt(user, password string) {
 	ecoclient, err = ecoflow.NewMqttClient(context.Background(), configuration)
 	if err != nil {
 		services.ServerMessage("Shuting down ... error creating MQTT client: %v", err)
-		log.Log.Fatalf("Error new MQTT client: %v", err)
+		log.Log.Fatalf("Error creating new MQTT client connection: %v", err)
 	}
 	mqttid = connnectDatabase()
 	log.Log.Debugf("Connecting MQTT Ecoflow connect")
@@ -149,6 +149,7 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 
 }
 
+// insertMqttData prepare MQTT data into column data for database storage
 func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
 	keys := make([]string, 0)
 	for k := range data {
@@ -185,12 +186,13 @@ func insertMqttData(data map[string]interface{}) ([]string, [][]any) {
 			}
 		default:
 			services.ServerMessage("Unknown type %s=%T\n", k, v)
-			log.Log.Fatalf("Unknown type %s=%T\n", k, v)
+			log.Log.Errorf("Unknown type %s=%T\n", k, v)
 		}
 	}
 	return fields, [][]any{columns}
 }
 
+// displayHeader log output display message header of MQTT Ecoflow data
 func displayHeader(msg *Header) {
 	if !log.IsDebugLevel() {
 		return
@@ -240,6 +242,7 @@ func OnReconnect(mqtt.Client, *mqtt.ClientOptions) {
 	log.Log.Infof("Reconnecting...")
 }
 
+// getSnFromTopic extract serial number from topic
 func getSnFromTopic(topic string) string {
 	topicStr := strings.Split(topic, "/")
 	return topicStr[len(topicStr)-1]
