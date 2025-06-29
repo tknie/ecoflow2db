@@ -154,3 +154,10 @@ func insertTable(storeid common.RegDbID, tn string, data map[string]interface{},
 	}
 	return err
 }
+
+// insertTable insert data into database
+func readBatch(readid common.RegDbID, tn string, selectCmd string, f func(search *common.Query, result *common.Result) error) error {
+	query := common.Query{Search: selectCmd}
+	err := readid.BatchSelectFct(&query, f)
+	return err
+}
