@@ -1,0 +1,16 @@
+default:
+  baseWatt: 180
+  lowerBatLimit: 15
+  upperBatLimit: 100
+  debug: info
+database:
+  target: postgres://<user>:<password>@<host>:<port>/home
+  tableName: ecoflow
+  table: device_quota
+ecoflow:
+  user: <user email>
+  password: <password>
+  accessKey: <access key>
+  secretKey: <secret key>
+  microConverter:
+    serials: ${ECOFLOW_DEVICE_SN}

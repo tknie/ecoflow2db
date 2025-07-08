@@ -70,7 +70,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		}
 
 		// Check, create and write into table
-		checkTable(id, "device_"+l.SN+"_quota", func() []*common.Column {
+		checkTable(id, "device_quota", func() []*common.Column {
 			keys := make([]string, 0, len(resp))
 			for k := range resp {
 				keys = append(keys, k)
@@ -102,9 +102,12 @@ func httpParameterStore(client *ecoflow.Client) {
 
 			return
 		case <-time.After(time.Second * time.Duration(LoopSeconds)):
+			if counter%350 == 0 {
+				services.ServerMessage("Received HTTP requests: %04d", counter)
+			}
 
 			for _, l := range devices.Devices {
-				tn := "device_" + l.SN + "_quota"
+				tn := "device_quota"
 				stat := getStatEntry(l.SN)
 				resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 				if err != nil {

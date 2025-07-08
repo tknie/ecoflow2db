@@ -34,11 +34,6 @@ type storeElement struct {
 
 var msgChan = make(chan *storeElement, 100)
 
-// init initialized tablename information
-func init() {
-	tableName = os.Getenv("ECOFLOW_DB_TABLENAME")
-}
-
 // InitDatabase init database connections
 func InitDatabase() {
 	databaseUrl := os.Getenv("ECOFLOW_DB_URL")
@@ -85,7 +80,8 @@ func connnectDatabase() common.RegDbID {
 func storeDatabase() {
 	storeid := connnectDatabase()
 	for m := range msgChan {
-		tn := m.checkTable(storeid)
+		tn := strings.ToLower("mqtt_" + getType(m.object))
+		m.checkTable(tn, storeid)
 
 		log.Log.Debugf("Insert structFields: %T into tn", m.object)
 		fields := []string{"*"}
@@ -107,8 +103,7 @@ func storeDatabase() {
 }
 
 // checkTable check if table is available and if not, create it
-func (m *storeElement) checkTable(storeid common.RegDbID) string {
-	tn := strings.ToLower(tableName + "_" + m.sn + "_" + getType(m.object))
+func (m *storeElement) checkTable(tn string, storeid common.RegDbID) {
 	if !slices.Contains(dbTables, tn) {
 		services.ServerMessage("Database %s needed to be created", tn)
 		err := storeid.CreateTable(tn, m.object)
@@ -117,7 +112,6 @@ func (m *storeElement) checkTable(storeid common.RegDbID) string {
 		}
 		readDatabaseMaps()
 	}
-	return tn
 }
 
 // checkTable check table and if not available, create table

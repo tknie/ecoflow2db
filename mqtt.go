@@ -20,6 +20,7 @@ import (
 	reflect "reflect"
 	"sort"
 	"strings"
+	sync "sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -32,11 +33,12 @@ import (
 var ecoclient *ecoflow.MqttClient
 
 var devices *ecoflow.DeviceListResponse
-var tableName string
 
 var mqttid common.RegDbID
 
 var MqttDisable = false
+
+var mqttStatMap = sync.Map{}
 
 // InitMqtt initialize MQTT listener
 func InitMqtt(user, password string) {
@@ -72,7 +74,18 @@ func MessageHandler(_ mqtt.Client, msg mqtt.Message) {
 
 	stat.mqttCounter++
 
-	log.Log.Infof("Received message of device %s at %v\n", serialNumber, time.Now().Format(layout))
+	if e, ok := mqttStatMap.Load(msg.Topic()); ok {
+		mqttStatMap.Store(msg.Topic(), e.(int)+1)
+	} else {
+		mqttStatMap.Store(msg.Topic(), 1)
+	}
+	if stat.mqttCounter%350 == 0 {
+		services.ServerMessage("Received MQTT msgs: %04d", stat.mqttCounter)
+		mqttStatMap.Range(func(key, value any) bool {
+			log.Log.Infof("Received message of device %s = %d at %v\n", key, value.(int), time.Now().Format(layout))
+			return true
+		})
+	}
 
 	log.Log.Debugf("received message on topic %s; body (retain: %t):\n%s", msg.Topic(),
 		msg.Retained(), FormatByteBuffer("MQTT Body", msg.Payload()))
