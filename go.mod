@@ -7,7 +7,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tknie/flynn v0.9.7
 	github.com/tknie/log v0.1.0
-	golang.org/x/text v0.25.0
+	golang.org/x/text v0.27.0
 	google.golang.org/protobuf v1.36.6
 )
 
@@ -43,6 +43,6 @@ require (
 	github.com/tess1o/go-ecoflow v1.1.0
 	github.com/tknie/services v0.3.0
 	golang.org/x/net v0.40.0 // indirect
-	golang.org/x/sync v0.14.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 )
