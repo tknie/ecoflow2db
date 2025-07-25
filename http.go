@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"math"
 	"net/http"
-	"os"
 	"slices"
 	"sort"
 	"strings"
@@ -41,8 +40,8 @@ var httpDone = make(chan bool, 1)
 func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
 	requestParams := make(map[string]interface{})
 	requestParams["sn"] = deviceSn
-	accessKey := os.Getenv("ECOFLOW_ACCESS_KEY")
-	secretKey := os.Getenv("ECOFLOW_SECRET_KEY")
+	accessKey := adapter.EcoflowConfig.AccessKey
+	secretKey := adapter.EcoflowConfig.SecretKey
 
 	request := ecoflow.NewHttpRequest(&http.Client{}, "GET", "https://api.ecoflow.com/iot-open/sign/device/quota/all", requestParams, accessKey, secretKey)
 	response, err := request.Execute(context.Background())
@@ -70,7 +69,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		}
 
 		// Check, create and write into table
-		checkTable(id, "device_quota", func() []*common.Column {
+		checkTable(id, adapter.DatabaseConfig.EcoflowTable, func() []*common.Column {
 			keys := make([]string, 0, len(resp))
 			for k := range resp {
 				keys = append(keys, k)
@@ -107,7 +106,7 @@ func httpParameterStore(client *ecoflow.Client) {
 			}
 
 			for _, l := range devices.Devices {
-				tn := "device_quota"
+				tn := adapter.DatabaseConfig.EcoflowTable
 				stat := getStatEntry(l.SN)
 				resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 				if err != nil {

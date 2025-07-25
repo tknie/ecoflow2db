@@ -14,11 +14,10 @@ package ecoflow2db
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"os"
+	"html/template"
+	"sort"
 	"time"
 
-	"github.com/stretchr/testify/assert/yaml"
 	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
 	"github.com/tknie/services"
@@ -33,15 +32,16 @@ select
 	dhzgqq.eco_20_1_genewatt / 10 as "housein",
 	abs(dhzgqq.eco_20_1_gridconswatts::float / 10) as "gridwatts",
 	dhzgqq.eco_20_1_invdemandwatts / 10 as "requested",
-	dhzgqq.eco_20_1_bmsreqchgamp  as "batfill",
+	dhzgqq.eco_20_1_bmsreqchgamp  as "batreqfill",
 	h.powercurr,
 	h.powerout,
 	drzsq.eco_bms_bmsstatus_actsoc as batfill
 from
-	device_hw51zeh49g9q1664_quota dhzgqq,
-	home h, device_r331zeb5sgbu0300_quota drzsq 
+	{{ .EcoflowTable }} dhzgqq,
+	{{ .EnergyTable }} h, {{ .EcoflowTable }} drzsq 
 where
-	h.inserted_on >= NOW() - '30 minute'::INTERVAL
+	dhzgqq.eco_serial_number = upper('hw51zeh49g9q1664') and drzsq.eco_serial_number = upper('r331zeb5sgbu0300')
+	and h.inserted_on >= NOW() - '30 minute'::INTERVAL
 	and dhzgqq.eco_timestamp >= NOW() - '30 minute'::INTERVAL
 	and drzsq.eco_timestamp >= NOW() - '30 minute'::INTERVAL
 	and to_char(to_timestamp(dhzgqq.eco_20_1_utctime) , 'YYYYMMDD HH24MI') = to_char(h.inserted_on , 'YYYYMMDD HH24MI')
@@ -49,74 +49,36 @@ where
 order by
 	h.inserted_on desc,
 	dhzgqq.eco_timestamp desc
-limit 4
+limit 10
 `
 
-const defaultBaseRequest = 170
-
 type parameter struct {
-	timestamp time.Time
-	solargen  int64
-	batinput  float64
-	batout    float64
-	housein   int64
-	gridwatts float64
-	requested int64
-	powercurr int32
-	powerout  int32
-	batfill   int64
+	timestamp  time.Time
+	solargen   int64
+	batinput   float64
+	batout     float64
+	housein    int64
+	gridwatts  float64
+	requested  int64
+	batreqfill int64
+	powercurr  int32
+	powerout   int32
+	batfill    int64
 }
 
-type adapterConfig struct {
-	defaultConfig *defaultConfig `yaml:"default"`
-}
-
-type defaultConfig struct {
-	baseRequest int64 `yaml:"baseWatt"`
-}
-
-var adapter = &adapterConfig{defaultConfig: &defaultConfig{baseRequest: defaultBaseRequest}}
-
-var FlowLoopSeconds = DefaultSeconds
-
-// ReadConfig read config file
-func readConfig(file string) ([]byte, error) {
-	configFile, err := os.Open(file)
-	if err != nil {
-		log.Log.Debugf("Open file error: %#v", err)
-		return nil, fmt.Errorf("open file err of %s: %v", file, err)
-	}
-	defer configFile.Close()
-
-	fi, _ := configFile.Stat()
-	log.Log.Debugf("File size=%d", fi.Size())
-	var buffer bytes.Buffer
-	_, err = io.Copy(&buffer, configFile)
-	if err != nil {
-		log.Log.Debugf("Read file error: %#v", err)
-		return nil, fmt.Errorf("read file err of %s: %v", file, err)
-	}
-	fmt.Printf("Config loaded %#v\n", adapter)
-	fmt.Printf("Config loaded %d\n", adapter.defaultConfig.baseRequest)
-	return buffer.Bytes(), nil
-}
-
-func InitFlow(file string) {
-	if file != "" {
-		fileEnvResolved := os.ExpandEnv(file)
-
-		data, err := readConfig(fileEnvResolved)
-		if err != nil {
-			log.Log.Fatal("Error loading config: %s", file)
-		}
-		err = yaml.Unmarshal(data, adapter)
-		if err != nil {
-			log.Log.Fatal("Error unmarshal config: %s", file)
-		}
-		if adapter.defaultConfig.baseRequest == 0 {
-			adapter.defaultConfig.baseRequest = defaultBaseRequest
-		}
-	}
+func (p *parameter) toString() string {
+	return fmt.Sprintf("%15v %10v %10v %10v %10v %10v %10v %10v %10v %10v %10v",
+		p.timestamp.Format(shortLayout),
+		p.solargen,
+		p.batinput,
+		p.batout,
+		p.housein,
+		p.gridwatts,
+		p.requested,
+		p.batreqfill,
+		p.powercurr,
+		p.powerout,
+		p.batfill)
 }
 
 func StartFlow(test bool) {
@@ -133,7 +95,7 @@ func StartFlow(test bool) {
 				services.ServerMessage("Ecoflow analyze error: %v", err)
 			} else {
 				services.ServerMessage("Ecoflow analyze called")
-				analyze(cFlow, test)
+				AnalyzeEnergyHistory(cFlow, test)
 			}
 		}
 	}
@@ -141,23 +103,36 @@ func StartFlow(test bool) {
 
 func ReadCurrentFlow() ([]*parameter, error) {
 
-	tn := "device_quota"
+	tn := adapter.DatabaseConfig.EcoflowTable
+	tnHome := adapter.DatabaseConfig.EnergyTable
+	tmpl, err := template.New("sql").Parse(SELECT_GET_ALL_PARAMETER)
+	if err != nil {
+		panic(err)
+	}
+	var buffer bytes.Buffer
+	err = tmpl.Execute(&buffer, struct {
+		EcoflowTable string
+		EnergyTable  string
+	}{EcoflowTable: tn, EnergyTable: tnHome})
+	if err != nil {
+		panic(err)
+	}
 	readid := connnectDatabase()
 	headerOutput := false
 	fieldMap := make(map[string]int)
 	lastLimitEntries := make([]*parameter, 0)
-	err := readBatch(readid, tn, SELECT_GET_ALL_PARAMETER, func(search *common.Query, result *common.Result) error {
+	err = readBatch(readid, tn, buffer.String(), func(search *common.Query, result *common.Result) error {
 		if !headerOutput {
 			for i, field := range result.Fields {
 				switch result.Rows[i].(type) {
 				case time.Time:
-					fmt.Printf("%15s ", field)
+					header += fmt.Sprintf("%15s ", field)
 				default:
-					fmt.Printf("%10s ", field)
+					header += fmt.Sprintf("%10s ", field)
 				}
 				fieldMap[field] = i
 			}
-			fmt.Printf("\n")
+			fmt.Println(header)
 			headerOutput = true
 		}
 		// fmt.Printf("MMM %#v\n", fieldMap)
@@ -170,20 +145,13 @@ func ReadCurrentFlow() ([]*parameter, error) {
 		p.housein = result.Rows[fieldMap["housein"]].(int64)
 		p.gridwatts = result.Rows[fieldMap["gridwatts"]].(float64)
 		p.requested = result.Rows[fieldMap["requested"]].(int64)
+		p.batreqfill = result.Rows[fieldMap["batreqfill"]].(int64)
 		p.powercurr = result.Rows[fieldMap["powercurr"]].(int32)
 		p.powerout = result.Rows[fieldMap["powerout"]].(int32)
 		p.batfill = result.Rows[fieldMap["batfill"]].(int64)
 		// fmt.Printf("parameter %v %#v\n", p.timestamp, p)
 		lastLimitEntries = append(lastLimitEntries, p)
-		for _, r := range result.Rows {
-			switch v := r.(type) {
-			case time.Time:
-				fmt.Printf("%10s", v.Format(shortLayout))
-			default:
-				fmt.Printf("%10v ", r)
-			}
-		}
-		fmt.Printf("\n")
+		fmt.Println(p.toString())
 		return nil
 	})
 	if err != nil {
@@ -192,26 +160,74 @@ func ReadCurrentFlow() ([]*parameter, error) {
 	return lastLimitEntries, nil
 }
 
-func analyze(lastLimitEntries []*parameter, test bool) {
-	fmt.Println(lastLimitEntries[0].timestamp.Sub(lastLimitEntries[1].timestamp), lastLimitEntries[0].powerout)
-	fmt.Println("Requested:  ", lastLimitEntries[0].requested)
-	fmt.Println("Powerout:   ", lastLimitEntries[0].powerout)
-	if lastLimitEntries[0].powerout > 0 {
-		fmt.Println("Reduce by:  ", lastLimitEntries[0].powerout)
+func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
+	if len(lastLimitEntries) == 0 {
+		return
+	}
+	log.Log.Debugf("Requested:  %d", lastLimitEntries[0].requested)
+	log.Log.Debugf("Powerout:   %d", lastLimitEntries[0].powerout)
+	lastRequested := lastLimitEntries[0].requested
+	powerout := lastLimitEntries[0].powerout
+	if powerout > 0 {
+		log.Log.Debugf("Reduce by:  %d", lastLimitEntries[0].powerout)
 		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(lastLimitEntries[0].powerout) - 10
-		fmt.Println("Reduce to:  ", reduceToRequest)
-		if reduceToRequest > float64(adapter.defaultConfig.baseRequest) {
+		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
+		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
 			SetEnvironmentPowerConsumption(reduceToRequest)
+			lastRequested = int64(reduceToRequest)
+		} else {
+			SetEnvironmentPowerConsumption(float64(adapter.DefaultConfig.BaseRequest))
+			lastRequested = adapter.DefaultConfig.BaseRequest
 		}
 	}
+	newRequested := lastLimitEntries[0].requested
 	if lastLimitEntries[0].housein == 0 {
-		if lastLimitEntries[0].requested > adapter.defaultConfig.baseRequest {
-			fmt.Printf("Set base request: %d\n", adapter.defaultConfig.baseRequest)
-			if !test {
-				SetEnvironmentPowerConsumption(float64(adapter.defaultConfig.baseRequest))
-			}
+		if lastLimitEntries[0].requested > adapter.DefaultConfig.BaseRequest {
+			log.Log.Debugf("Set base request: %d", adapter.DefaultConfig.BaseRequest)
+			newRequested = adapter.DefaultConfig.BaseRequest
 		}
 	}
 
-	fmt.Println("Housein:    ", lastLimitEntries[0].housein)
+	log.Log.Debugf("Housein:    %d", lastLimitEntries[0].housein)
+	sort.SliceStable(lastLimitEntries, func(i, j int) bool {
+		return lastLimitEntries[i].powercurr < lastLimitEntries[j].powercurr
+	})
+	fmt.Println(header)
+	for _, l := range lastLimitEntries {
+		fmt.Println(l.toString())
+	}
+	l := len(lastLimitEntries)
+	median := float64(0)
+	if l > 0 {
+		if l%2 == 0 {
+			median = float64(lastLimitEntries[l/2-1].powercurr+lastLimitEntries[l/2].powercurr) / 2
+		} else {
+			median = float64(lastLimitEntries[l/2].powercurr)
+		}
+	}
+
+	log.Log.Debugf("Old:      %d", newRequested)
+	log.Log.Debugf("Median:   %d", median)
+	log.Log.Debugf("Minmum:   %d", lastLimitEntries[0].powercurr)
+	log.Log.Debugf("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
+	log.Log.Debugf("Power:    %d", lastLimitEntries[0].housein+int64(lastLimitEntries[0].powercurr))
+	newRequested = lastLimitEntries[0].housein + int64(lastLimitEntries[0].powercurr) - lastRequested
+	log.Log.Debugf("Last:     %d", lastRequested)
+	fmt.Println("NewDiff:  ", newRequested)
+	fmt.Println("MedPower: ", lastRequested+int64(median))
+	newRequested = lastRequested + newRequested
+	if newRequested < adapter.DefaultConfig.BaseRequest {
+		newRequested = adapter.DefaultConfig.BaseRequest
+	}
+	if newRequested > adapter.DefaultConfig.MaxRequest {
+		newRequested = adapter.DefaultConfig.MaxRequest
+	}
+	fmt.Println("New:      ", newRequested)
+	if newRequested > adapter.DefaultConfig.BaseRequest {
+		fmt.Printf("Set request: %d\n", newRequested)
+		if !test {
+			SetEnvironmentPowerConsumption(float64(newRequested))
+		}
+	}
+
 }

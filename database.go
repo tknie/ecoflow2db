@@ -36,7 +36,7 @@ var msgChan = make(chan *storeElement, 100)
 
 // InitDatabase init database connections
 func InitDatabase() {
-	databaseUrl := os.Getenv("ECOFLOW_DB_URL")
+	databaseUrl := adapter.DatabaseConfig.Target
 	var err error
 	dbRef, dbPassword, err = common.NewReference(databaseUrl)
 	if err != nil {

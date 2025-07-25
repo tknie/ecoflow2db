@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	services.ServerMessage("Start ecoflow2db application v%s (build at %v)", ecoflow2db.Version, ecoflow2db.BuildDate)
+	services.ServerMessage("Start ecoflow2db application %s (build at %v)", ecoflow2db.Version, ecoflow2db.BuildDate)
 	ecoflow2db.StartLog("ecoflow2db.log")
 }
 
@@ -42,16 +42,24 @@ func main() {
 	powervalue := float64(0)
 	readFlow := false
 	flowControlFile := ""
+	test := false
+	flow := false
 
 	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.LoopSeconds, "The seconds wating between REST API queries")
 	flag.IntVar(&statSecs, "s", int(ecoflow2db.StatLoopMinutes), "The minutes waiting between statistics output")
 	flag.BoolVar(&ecoflow2db.MqttDisable, "m", false, "Disable MQTT listener")
 	flag.BoolVar(&readFlow, "r", false, "Read current flow parameter")
 	flag.BoolVar(&create, "create", false, "Create new database")
+	flag.BoolVar(&flow, "a", false, "Start energy analyze")
+	flag.BoolVar(&test, "T", false, "Do tests and output only")
 	flag.StringVar(&flowControlFile, "f", "", "Load YAML control file")
 	flag.Float64Var(&powervalue, "p", 0, "Set new power value for the power powerstream")
 
 	flag.Parse()
+
+	if flowControlFile != "" {
+		ecoflow2db.LoadConfig(flowControlFile)
+	}
 
 	if powervalue > 0 {
 		services.ServerMessage("Set new power value for powerstream to %f", powervalue)
@@ -59,15 +67,19 @@ func main() {
 		return
 	}
 
-	ecoflow2db.InitFlow(flowControlFile)
 	ecoflow2db.StatLoopMinutes = time.Duration(statSecs)
 
 	ecoflow2db.InitDatabase()
 	if readFlow {
-		_, err := ecoflow2db.ReadCurrentFlow()
+		l, err := ecoflow2db.ReadCurrentFlow()
 		if err != nil {
 			services.ServerMessage("Error calling flow: %v", err)
 		}
+		ecoflow2db.AnalyzeEnergyHistory(l, true)
+		return
+	}
+	if flow {
+		ecoflow2db.StartFlow(test)
 		return
 	}
 	services.ServerMessage("Loop in API each %d seconds", ecoflow2db.LoopSeconds)

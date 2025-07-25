@@ -4,13 +4,15 @@ default:
   upperBatLimit: 100
   debug: info
 database:
-  target: postgres://<user>:<password>@<host>:<port>/home
+  target: postgres://abc:def@xxx:5422/home
   tableName: ecoflow
   table: device_quota
 ecoflow:
-  user: <user email>
-  password: <password>
-  accessKey: <access key>
-  secretKey: <secret key>
+  user: abc@xx.de
+  password: test123
+  accessKey: test234
+  secretKey: test44556---+
   microConverter:
+    - abc
+    - ddd
     - ${ECOFLOW_DEVICE_SN}

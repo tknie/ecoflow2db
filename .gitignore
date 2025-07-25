@@ -4,3 +4,4 @@ mqtt
 *.log
 .DS_Store
 docker/ecoflow2db
+testenv.sh

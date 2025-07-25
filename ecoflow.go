@@ -27,11 +27,11 @@ var quit = make(chan struct{})
 
 // InitEcoflow init ecoflow MQTT
 func InitEcoflow() {
-	user := os.Getenv("ECOFLOW_USER")
-	password := os.Getenv("ECOFLOW_PASSWORD")
+	user := adapter.EcoflowConfig.User
+	password := adapter.EcoflowConfig.Password
 
-	accessKey := os.Getenv("ECOFLOW_ACCESS_KEY")
-	secretKey := os.Getenv("ECOFLOW_SECRET_KEY")
+	accessKey := os.ExpandEnv(adapter.EcoflowConfig.AccessKey)
+	secretKey := os.ExpandEnv(adapter.EcoflowConfig.SecretKey)
 
 	log.Log.Debugf("AccessKey: %v", accessKey)
 	log.Log.Debugf("SecretKey: %v", secretKey)
@@ -62,17 +62,18 @@ func refreshDeviceList(client *ecoflow.Client) {
 
 // SetEnvironmentPowerConsumption set new environment consumption value
 func SetEnvironmentPowerConsumption(value float64) {
-	accessKey := os.Getenv("ECOFLOW_ACCESS_KEY")
-	secretKey := os.Getenv("ECOFLOW_SECRET_KEY")
+	accessKey := os.ExpandEnv(adapter.EcoflowConfig.AccessKey)
+	secretKey := os.ExpandEnv(adapter.EcoflowConfig.SecretKey)
 	if value > 600 || value < 0 {
 		services.ServerMessage("Value %f out of range in 0:1000", value)
 		return
 	}
 
-	sn := os.Getenv("ECOFLOW_DEVICE_SN")
+	sn := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
 
 	log.Log.Debugf("AccessKey: %v", accessKey)
 	log.Log.Debugf("SecretKey: %v", secretKey)
+	log.Log.Debugf("Serial Number: %v", sn)
 	client := ecoflow.NewEcoflowClient(accessKey, secretKey)
 
 	params := make(map[string]interface{})
