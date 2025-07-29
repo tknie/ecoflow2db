@@ -20,6 +20,8 @@ import (
 	"github.com/tknie/services"
 )
 
+var quit = make(chan struct{})
+
 func setupGracefulShutdown(done chan bool) {
 	// Create a channel to listen for OS signals
 	signalChan := make(chan os.Signal, 1)

@@ -17,6 +17,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/tknie/ecoflow"
 	"github.com/tknie/flynn"
 	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
@@ -80,7 +81,7 @@ func connnectDatabase() common.RegDbID {
 func storeDatabase() {
 	storeid := connnectDatabase()
 	for m := range msgChan {
-		tn := strings.ToLower("mqtt_" + getType(m.object))
+		tn := strings.ToLower("mqtt_" + ecoflow.GetTypeName(m.object))
 		m.checkTable(tn, storeid)
 
 		log.Log.Debugf("Insert structFields: %T into tn", m.object)

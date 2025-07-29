@@ -12,18 +12,19 @@
 package ecoflow2db
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
 	"os"
-	"time"
 
-	"github.com/tess1o/go-ecoflow"
+	"github.com/tknie/ecoflow"
+	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
 	"github.com/tknie/services"
 )
 
-var quit = make(chan struct{})
+var mqttid common.RegDbID
+var MqttDisable = false
+var client *ecoflow.Client
+
+var serialNumberConverter string
 
 // InitEcoflow init ecoflow MQTT
 func InitEcoflow() {
@@ -35,8 +36,8 @@ func InitEcoflow() {
 
 	log.Log.Debugf("AccessKey: %v", accessKey)
 	log.Log.Debugf("SecretKey: %v", secretKey)
-	client := ecoflow.NewEcoflowClient(accessKey, secretKey)
-	refreshDeviceList(client)
+	client = ecoflow.NewClient(accessKey, secretKey)
+	client.RefreshDeviceList()
 	// Start statistics output
 	go httpParameterStore(client)
 	startStatLoop()
@@ -49,62 +50,19 @@ func InitEcoflow() {
 	<-done
 }
 
-// refreshDeviceList refresh device list using HTTP device list request
-func refreshDeviceList(client *ecoflow.Client) {
-	//get all linked ecoflow devices. Returns SN and online status
-	list, err := client.GetDeviceList(context.Background())
-	if err != nil {
-		services.ServerMessage("Error getting device list: %v", err)
-	} else {
-		devices = list
-	}
+// InitMqtt initialize MQTT listener
+func InitMqtt(user, password string) {
+	ecoflow.InitMqtt(user, password)
+
+	mqttid = connnectDatabase()
+	log.Log.Debugf("Connecting MQTT Ecoflow connect")
+	services.ServerMessage("Connecting MQTT client")
+	ecoflow.InitMqtt(user, password)
+	log.Log.Debugf("Wait for Ecoflow disconnect")
+	services.ServerMessage("Waiting for MQTT data")
+
 }
 
-// SetEnvironmentPowerConsumption set new environment consumption value
 func SetEnvironmentPowerConsumption(value float64) {
-	accessKey := os.ExpandEnv(adapter.EcoflowConfig.AccessKey)
-	secretKey := os.ExpandEnv(adapter.EcoflowConfig.SecretKey)
-	if value > 600 || value < 0 {
-		services.ServerMessage("Value %f out of range in 0:1000", value)
-		return
-	}
-
-	sn := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
-
-	log.Log.Debugf("AccessKey: %v", accessKey)
-	log.Log.Debugf("SecretKey: %v", secretKey)
-	log.Log.Debugf("Serial Number: %v", sn)
-	client := ecoflow.NewEcoflowClient(accessKey, secretKey)
-
-	params := make(map[string]interface{})
-	// Ecoflow need to set a value times by 10
-	// e.g. 200 watt needs value 2000
-	params["permanentWatts"] = value * 10
-	cmdReq := ecoflow.CmdSetRequest{
-		Id:      fmt.Sprint(time.Now().UnixMilli()),
-		CmdCode: "WN511_SET_PERMANENT_WATTS_PACK",
-		Sn:      sn,
-		Params:  params,
-	}
-
-	jsonData, err := json.Marshal(cmdReq)
-	if err != nil {
-		services.ServerMessage("Error marshal data: %v", err)
-		return
-	}
-
-	var req map[string]interface{}
-
-	err = json.Unmarshal(jsonData, &req)
-	if err != nil {
-		services.ServerMessage("Error unmarshal data: %v", err)
-		return
-	}
-	cmd, err := client.SetDeviceParameter(context.Background(), req)
-
-	if err != nil {
-		services.ServerMessage("Error set device parameter: %v", err)
-	} else {
-		services.ServerMessage("Set device parameter to %f: %s", value, cmd.Message)
-	}
+	client.SetEnvironmentPowerConsumption(serialNumberConverter, value)
 }

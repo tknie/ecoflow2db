@@ -14,39 +14,20 @@ package ecoflow2db
 import (
 	"bytes"
 	"fmt"
-	sync "sync"
 	"time"
 
+	"github.com/tknie/ecoflow"
 	"github.com/tknie/log"
 	"github.com/tknie/services"
 )
 
-type statMqtt struct {
-	mu          sync.Mutex
-	mqttCounter uint64
-	httpCounter uint64
-}
-
 var StatLoopMinutes = time.Duration(5)
-
-var mapStatMqtt = make(map[string]*statMqtt)
 
 type statDatabase struct {
 	counter uint64
 }
 
 var mapStatDatabase = make(map[string]*statDatabase)
-
-func getStatEntry(serialNumber string) *statMqtt {
-	if s, ok := mapStatMqtt[serialNumber]; ok {
-		return s
-	} else {
-		stat := &statMqtt{}
-		mapStatMqtt[serialNumber] = stat
-		return stat
-	}
-
-}
 
 func getDbStatEntry(tn string) *statDatabase {
 	if s, ok := mapStatDatabase[tn]; ok {
@@ -68,9 +49,7 @@ func startStatLoop() {
 				buffer.WriteString("Statistics at ")
 				buffer.WriteString(time.Now().Format(layout))
 				buffer.WriteString(":\n")
-				for k, v := range mapStatMqtt {
-					buffer.WriteString(fmt.Sprintf("  %s got http=%03d mqtt=%03d messages\n", k, v.httpCounter, v.mqttCounter))
-				}
+				buffer.WriteString(ecoflow.StatMqtt())
 				for k, v := range mapStatDatabase {
 					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
 				}

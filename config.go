@@ -36,10 +36,10 @@ type defaultConfig struct {
 }
 
 type databaseConfig struct {
-	Target       string `yaml:"target"`
-	TableName    string `yaml:"tableName"`
-	EcoflowTable string `yaml:"ecoflowTable"`
-	EnergyTable  string `yaml:"energyTable"`
+	Target      string `yaml:"target"`
+	TableName   string `yaml:"tableName"`
+	Table       string `yaml:"ecoflowTable"`
+	EnergyTable string `yaml:"energyTable"`
 }
 
 type ecoflowConfig struct {

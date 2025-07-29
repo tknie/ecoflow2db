@@ -14,14 +14,14 @@ package ecoflow2db
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math"
-	"net/http"
 	"slices"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/tess1o/go-ecoflow"
+	"github.com/tknie/ecoflow"
 	"github.com/tknie/flynn/common"
 	"github.com/tknie/log"
 	"github.com/tknie/services"
@@ -34,29 +34,13 @@ const DefaultSeconds = 60
 
 var LoopSeconds = DefaultSeconds
 var httpDone = make(chan bool, 1)
-
-// GetDeviceAllParameters get all device parameters for a specific device
-// Use HTTP request to get the parameter information
-func GetDeviceAllParameters(client *ecoflow.Client, deviceSn string) error {
-	requestParams := make(map[string]interface{})
-	requestParams["sn"] = deviceSn
-	accessKey := adapter.EcoflowConfig.AccessKey
-	secretKey := adapter.EcoflowConfig.SecretKey
-
-	request := ecoflow.NewHttpRequest(&http.Client{}, "GET", "https://api.ecoflow.com/iot-open/sign/device/quota/all", requestParams, accessKey, secretKey)
-	response, err := request.Execute(context.Background())
-
-	if err != nil {
-		return err
-	}
-	log.Log.Debugf("Response: %s", string(response))
-	return nil
-}
+var httpCounter = uint64(0)
 
 // httpParameterStore main thread reading information with HTTP request
 // and store them in the database
 func httpParameterStore(client *ecoflow.Client) {
 	id := connnectDatabase()
+	devices := client.GetDevices()
 
 	for _, l := range devices.Devices {
 		// get all parameters for device
@@ -69,7 +53,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		}
 
 		// Check, create and write into table
-		checkTable(id, adapter.DatabaseConfig.EcoflowTable, func() []*common.Column {
+		checkTable(id, adapter.DatabaseConfig.Table, func() []*common.Column {
 			keys := make([]string, 0, len(resp))
 			for k := range resp {
 				keys = append(keys, k)
@@ -106,8 +90,7 @@ func httpParameterStore(client *ecoflow.Client) {
 			}
 
 			for _, l := range devices.Devices {
-				tn := adapter.DatabaseConfig.EcoflowTable
-				stat := getStatEntry(l.SN)
+				tn := adapter.DatabaseConfig.Table
 				resp, err := client.GetDeviceAllParameters(context.Background(), l.SN)
 				if err != nil {
 					log.Log.Errorf("Error getting device list %s: %v", l.SN, err)
@@ -125,7 +108,7 @@ func httpParameterStore(client *ecoflow.Client) {
 						id.Close()
 						id = connnectDatabase()
 					}
-					stat.httpCounter++
+					httpCounter++
 					if l.Online != 1 {
 						services.ServerMessage(l.SN + " device is offline")
 						needRefresh = true
@@ -135,7 +118,7 @@ func httpParameterStore(client *ecoflow.Client) {
 		}
 		log.Log.Infof("Triggered %d. HTTP query at %s", counter, time.Now().Format(layout))
 		if needRefresh {
-			refreshDeviceList(client)
+			client.RefreshDeviceList()
 		}
 	}
 }
@@ -247,4 +230,33 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 // endHttp end Database store of HTTP data
 func endHttp() {
 	httpDone <- true
+}
+
+func Callback(serialNumber string, data map[string]interface{}) {
+	tn := fmt.Sprintf("%s_mqtt", serialNumber)
+	if !checkTable(mqttid, tn, func() []*common.Column {
+		keys := make([]string, 0, len(data))
+		for k := range data {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		columns := make([]*common.Column, 0)
+		// prefix := ""
+		for _, k := range keys {
+			v := data[k]
+			name := "eco_" + strings.ReplaceAll(k, ".", "_")
+			log.Log.Debugf("Add column %s=%v %T -> %s\n", k, v, v, name)
+			column := createValueColumn(name, v)
+			columns = append(columns, column)
+		}
+		return columns
+	}) {
+		checkTableColumns(mqttid, tn, data)
+	}
+	err := insertTable(mqttid, tn, data, insertMqttData)
+	if err != nil && strings.Contains(err.Error(), "conn closed") {
+		// Connection is closed reconnect
+		mqttid.Close()
+		mqttid = connnectDatabase()
+	}
 }

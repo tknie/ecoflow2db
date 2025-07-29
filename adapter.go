@@ -84,26 +84,26 @@ func (p *parameter) toString() string {
 func StartFlow(test bool) {
 	counter := 0
 	for {
+		cFlow, err := ReadCurrentFlow()
+		if err != nil {
+			services.ServerMessage("Ecoflow analyze error: %v", err)
+		} else {
+			services.ServerMessage("Ecoflow analyze called")
+			AnalyzeEnergyHistory(cFlow, test)
+		}
 		counter++
 		select {
 		case <-httpDone:
 			services.ServerMessage("Ecoflow analyze loop is stopped")
 			return
 		case <-time.After(time.Second * time.Duration(FlowLoopSeconds)):
-			cFlow, err := ReadCurrentFlow()
-			if err != nil {
-				services.ServerMessage("Ecoflow analyze error: %v", err)
-			} else {
-				services.ServerMessage("Ecoflow analyze called")
-				AnalyzeEnergyHistory(cFlow, test)
-			}
 		}
 	}
 }
 
 func ReadCurrentFlow() ([]*parameter, error) {
 
-	tn := adapter.DatabaseConfig.EcoflowTable
+	tn := adapter.DatabaseConfig.Table
 	tnHome := adapter.DatabaseConfig.EnergyTable
 	tmpl, err := template.New("sql").Parse(SELECT_GET_ALL_PARAMETER)
 	if err != nil {
@@ -173,10 +173,10 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(lastLimitEntries[0].powerout) - 10
 		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
-			SetEnvironmentPowerConsumption(reduceToRequest)
+			client.SetEnvironmentPowerConsumption(serialNumberConverter, reduceToRequest)
 			lastRequested = int64(reduceToRequest)
 		} else {
-			SetEnvironmentPowerConsumption(float64(adapter.DefaultConfig.BaseRequest))
+			client.SetEnvironmentPowerConsumption(serialNumberConverter, float64(adapter.DefaultConfig.BaseRequest))
 			lastRequested = adapter.DefaultConfig.BaseRequest
 		}
 	}
@@ -226,7 +226,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if newRequested > adapter.DefaultConfig.BaseRequest {
 		fmt.Printf("Set request: %d\n", newRequested)
 		if !test {
-			SetEnvironmentPowerConsumption(float64(newRequested))
+			client.SetEnvironmentPowerConsumption(serialNumberConverter, float64(newRequested))
 		}
 	}
 
