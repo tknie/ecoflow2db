@@ -8,7 +8,7 @@ require (
 	github.com/tknie/ecoflow v0.0.0-20250729191314-b925118fc399
 	github.com/tknie/flynn v0.9.8
 	github.com/tknie/log v0.1.0
-	golang.org/x/text v0.27.0
+	golang.org/x/text v0.28.0
 )
 
 require (
