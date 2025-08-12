@@ -12,6 +12,7 @@
 package ecoflow2db
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/tknie/ecoflow"
@@ -26,10 +27,7 @@ var client *ecoflow.Client
 
 var serialNumberConverter string
 
-// InitEcoflow init ecoflow MQTT
-func InitEcoflow() {
-	user := adapter.EcoflowConfig.User
-	password := adapter.EcoflowConfig.Password
+func prepareEcoflow() {
 
 	accessKey := os.ExpandEnv(adapter.EcoflowConfig.AccessKey)
 	secretKey := os.ExpandEnv(adapter.EcoflowConfig.SecretKey)
@@ -38,6 +36,14 @@ func InitEcoflow() {
 	log.Log.Debugf("SecretKey: %v", secretKey)
 	client = ecoflow.NewClient(accessKey, secretKey)
 	client.RefreshDeviceList()
+	serialNumberConverter = os.Getenv("ECOFLOW_DEVICE_SN")
+}
+
+// InitEcoflow init ecoflow MQTT
+func InitEcoflow() {
+	prepareEcoflow()
+	user := adapter.EcoflowConfig.User
+	password := adapter.EcoflowConfig.Password
 	// Start statistics output
 	go httpParameterStore(client)
 	startStatLoop()
@@ -64,5 +70,14 @@ func InitMqtt(user, password string) {
 }
 
 func SetEnvironmentPowerConsumption(value float64) {
+	prepareEcoflow()
 	client.SetEnvironmentPowerConsumption(serialNumberConverter, value)
+}
+
+func SetCarACOn(sn string, turnOn bool) {
+	prepareEcoflow()
+
+	resp, err := client.SetCarACOn(sn, turnOn)
+
+	fmt.Println(err, resp)
 }

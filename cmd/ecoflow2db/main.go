@@ -44,6 +44,8 @@ func main() {
 	flowControlFile := ""
 	test := false
 	flow := false
+	caracon := false
+	serialNumber := ""
 
 	flag.IntVar(&ecoflow2db.LoopSeconds, "t", ecoflow2db.LoopSeconds, "The seconds wating between REST API queries")
 	flag.IntVar(&statSecs, "s", int(ecoflow2db.StatLoopMinutes), "The minutes waiting between statistics output")
@@ -51,7 +53,9 @@ func main() {
 	flag.BoolVar(&readFlow, "r", false, "Read current flow parameter")
 	flag.BoolVar(&create, "create", false, "Create new database")
 	flag.BoolVar(&flow, "a", false, "Start energy analyze")
+	flag.BoolVar(&caracon, "c", false, "Power car AC on")
 	flag.BoolVar(&test, "T", false, "Do tests and output only")
+	flag.StringVar(&serialNumber, "S", "", "Use serial number")
 	flag.StringVar(&flowControlFile, "f", "", "Load YAML control file")
 	flag.Float64Var(&powervalue, "p", 0, "Set new power value for the power powerstream")
 
@@ -64,6 +68,12 @@ func main() {
 	if powervalue > 0 {
 		services.ServerMessage("Set new power value for powerstream to %f", powervalue)
 		ecoflow2db.SetEnvironmentPowerConsumption(powervalue)
+		return
+	}
+
+	if caracon {
+		services.ServerMessage("Set AC car power on")
+		ecoflow2db.SetCarACOn(serialNumber, true)
 		return
 	}
 
