@@ -12,6 +12,7 @@
 package ecoflow2db
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -80,4 +81,23 @@ func SetCarACOn(sn string, turnOn bool) {
 	resp, err := client.SetCarACOn(sn, turnOn)
 
 	fmt.Println(err, resp)
+}
+
+func ListDevices() {
+	prepareEcoflow()
+	devs, err := client.GetDeviceList(context.Background())
+	if err != nil {
+		fmt.Println("List device error:", err)
+		return
+	}
+	for i, d := range devs.Devices {
+		fmt.Println(i, d.Online, d.SN)
+		m, err := client.GetDeviceAllParameters(context.Background(), d.SN)
+		if err != nil {
+			fmt.Println("Get info of device error:", err)
+			return
+		}
+		fmt.Println(m["bms_emsStatus.bmsModel"], m["pd.model"])
+		fmt.Println(m)
+	}
 }

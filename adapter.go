@@ -40,7 +40,7 @@ from
 	{{ .EcoflowTable }} dhzgqq,
 	{{ .EnergyTable }} h, {{ .EcoflowTable }} drzsq 
 where
-	dhzgqq.eco_serial_number = upper('hw51zeh49g9q1664') and drzsq.eco_serial_number = upper('r331zeb5sgbu0300')
+	dhzgqq.eco_serial_number = upper('hw51zeh49g9q1664') and drzsq.eco_serial_number = upper('{{ .SerialNumber }}')
 	and h.inserted_on >= NOW() - '30 minute'::INTERVAL
 	and dhzgqq.eco_timestamp >= NOW() - '30 minute'::INTERVAL
 	and drzsq.eco_timestamp >= NOW() - '30 minute'::INTERVAL
@@ -113,7 +113,8 @@ func ReadCurrentFlow() ([]*parameter, error) {
 	err = tmpl.Execute(&buffer, struct {
 		EcoflowTable string
 		EnergyTable  string
-	}{EcoflowTable: tn, EnergyTable: tnHome})
+		SerialNumber string
+	}{EcoflowTable: tn, EnergyTable: tnHome, SerialNumber: adapter.EcoflowConfig.MicroConverter[]})
 	if err != nil {
 		panic(err)
 	}

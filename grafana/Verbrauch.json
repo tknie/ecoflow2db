@@ -263,7 +263,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\tto_timestamp(dhzgqq.eco_20_1_utctime),\n\t(dhzgqq.eco_20_1_pv1inputwatts + dhzgqq.eco_20_1_pv2inputwatts)/ 10 as \"Generieren\" ,\n\tabs(least( dhzgqq.eco_20_1_batinputwatts::float / 10, 0)) as \"Batterieinput\",\n\tabs(greatest( dhzgqq.eco_20_1_batinputwatts::float / 10, 0)) as \"Batterienutzung\",\n\tdhzgqq.eco_20_1_genewatt / 10 as \"Hausnetzeingang\",\n\tabs(dhzgqq.eco_20_1_gridconswatts::float / 10) as \"Stromnetz\",\n\teco_20_1_invdemandwatts / 10 as \"Bedarf\",\n\th.powercurr as \"Verbrauch\",\n\th.powerout as \"Einspeisung\"\nfrom\n\tdevice_quota dhzgqq, home h\n\twhere dhzgqq.eco_serial_number = upper('hw51zeh49g9q1664')\norder by\n\tdhzgqq.eco_timestamp desc, \"time\" desc\nlimit 1",
+          "rawSql": "select\n\tto_timestamp(dhzgqq.eco_20_1_utctime),\n\t(dhzgqq.eco_20_1_pv1inputwatts + dhzgqq.eco_20_1_pv2inputwatts)/ 10 as \"Generieren\" ,\n\tabs(least( dhzgqq.eco_20_1_batinputwatts::float / 10, 0)) as \"Batterieinput\",\n\tabs(greatest( dhzgqq.eco_20_1_batinputwatts::float / 10, 0)) as \"Batterienutzung\",\n\tdhzgqq.eco_20_1_genewatt / 10 as \"Hausnetzeingang\",\n\tabs(dhzgqq.eco_20_1_gridconswatts::float / 10) as \"Stromnetz\",\n\teco_20_1_invdemandwatts / 10 as \"Bedarf\",\n\th.powercurr as \"Verbrauch\",\n\th.powerout as \"Einspeisung\"\nfrom\n\tdevice_quota dhzgqq, home h\n\twhere dhzgqq.eco_serial_number = upper('<microconverter>')\norder by\n\tdhzgqq.eco_timestamp desc, \"time\" desc\nlimit 1",
           "refId": "A",
           "sql": {
             "columns": [
@@ -287,7 +287,7 @@
             ],
             "limit": 50
           },
-          "table": "device_hw51zeh49g9q1664_quota"
+          "table": "device_<microconverter>_quota"
         }
       ],
       "title": "Solarzellen",
@@ -490,7 +490,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select * from (select\n\td2.eco_timestamp,\n\t\td2.eco_bms_bmsstatus_actsoc as \"Batterie Balkon\"\nfrom\n\tdevice_quota d2\n\twhere d2.eco_serial_number  = upper('r351zeb5pgb91424')\norder by\n\td2.eco_timestamp desc\nlimit 1)\n",
+          "rawSql": "select * from (select\n\td2.eco_timestamp,\n\t\td2.eco_bms_bmsstatus_actsoc as \"Batterie Balkon\"\nfrom\n\tdevice_quota d2\n\twhere d2.eco_serial_number  = upper('<battery1>')\norder by\n\td2.eco_timestamp desc\nlimit 1)\n",
           "refId": "B",
           "sql": {
             "columns": [
@@ -519,7 +519,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "\nselect * from (select\n\td2.eco_timestamp,\n\t\td2.eco_bms_bmsstatus_actsoc as \"Batterie Büro\"\nfrom\n\tdevice_quota d2\n\twhere d2.eco_serial_number  = upper('r331zeb5sgbu0300')\norder by\n\td2.eco_timestamp desc\nlimit 1)\n",
+          "rawSql": "\nselect * from (select\n\td2.eco_timestamp,\n\t\td2.eco_bms_bmsstatus_actsoc as \"Batterie Büro\"\nfrom\n\tdevice_quota d2\n\twhere d2.eco_serial_number  = upper('<battery2>')\norder by\n\td2.eco_timestamp desc\nlimit 1)\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -827,7 +827,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\teco_timestamp at time zone 'europe/berlin',\n\teco_bms_bmsstatus_actsoc  as \"Batteriestand Balkon\"\nfrom\n\tdevice_quota\nwhere\n\teco_timestamp at time zone 'europe/berlin' between '${__from:date:iso}' and '${__to:date:iso}'\n\tand eco_serial_number = UPPER('R351ZEB5PGB91424')\norder by\n\teco_timestamp desc",
+          "rawSql": "select\n\teco_timestamp at time zone 'europe/berlin',\n\teco_bms_bmsstatus_actsoc  as \"Batteriestand Balkon\"\nfrom\n\tdevice_quota\nwhere\n\teco_timestamp at time zone 'europe/berlin' between '${__from:date:iso}' and '${__to:date:iso}'\n\tand eco_serial_number = UPPER('<battery1>')\norder by\n\teco_timestamp desc",
           "refId": "A",
           "sql": {
             "columns": [
@@ -856,7 +856,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "select\n\teco_timestamp at time zone 'europe/berlin',\n\teco_bms_bmsstatus_actsoc as \"Batteriestand Büro\"\nfrom\n\tdevice_quota\nwhere\n\teco_timestamp at time zone 'europe/berlin' between '${__from:date:iso}' and '${__to:date:iso}'\n\tand  eco_serial_number = upper('r331zeb5sgbu0300')\norder by\n\teco_timestamp desc",
+          "rawSql": "select\n\teco_timestamp at time zone 'europe/berlin',\n\teco_bms_bmsstatus_actsoc as \"Batteriestand Büro\"\nfrom\n\tdevice_quota\nwhere\n\teco_timestamp at time zone 'europe/berlin' between '${__from:date:iso}' and '${__to:date:iso}'\n\tand  eco_serial_number = upper('<battery2>')\norder by\n\teco_timestamp desc",
           "refId": "B",
           "sql": {
             "columns": [
@@ -1064,7 +1064,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\teco_timestamp,\n\teco_20_1_pv1temp / 10 as pv1temp,\n\teco_20_1_pv2temp / 10 as pv2temp,\n\teco_20_1_llctemp / 10 as llctemp,\n\teco_20_1_battemp::float / 10 as battemp\nfrom\n\tdevice_quota\nwhere\n\teco_timestamp between '${__from:date:iso}' and '${__to:date:iso}'\n\tand eco_serial_number = UPPER('hw51zeh49g9q1664')",
+          "rawSql": "select\n\teco_timestamp,\n\teco_20_1_pv1temp / 10 as pv1temp,\n\teco_20_1_pv2temp / 10 as pv2temp,\n\teco_20_1_llctemp / 10 as llctemp,\n\teco_20_1_battemp::float / 10 as battemp\nfrom\n\tdevice_quota\nwhere\n\teco_timestamp between '${__from:date:iso}' and '${__to:date:iso}'\n\tand eco_serial_number = UPPER('<microconverter>')",
           "refId": "A",
           "sql": {
             "columns": [
