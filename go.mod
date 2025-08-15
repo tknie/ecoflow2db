@@ -5,7 +5,7 @@ go 1.24.5
 require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
-	github.com/tknie/ecoflow v0.0.0-20250811163714-f333d1836f04
+	github.com/tknie/ecoflow v0.0.0-20250812120510-1b4ea8f4206f
 	github.com/tknie/flynn v0.9.8
 	github.com/tknie/log v0.1.0
 	golang.org/x/text v0.28.0
@@ -32,7 +32,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a // indirect
+	golang.org/x/exp v0.0.0-20250811191247-51f88131bc50 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

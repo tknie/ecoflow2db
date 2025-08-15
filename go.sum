@@ -63,6 +63,8 @@ github.com/tknie/ecoflow v0.0.0-20250729191314-b925118fc399 h1:ugQBO5oUfnmNA826h
 github.com/tknie/ecoflow v0.0.0-20250729191314-b925118fc399/go.mod h1:6hSJ0b+loe2wPXpldHoaB+geCum/FBIMKy2SINGLjzc=
 github.com/tknie/ecoflow v0.0.0-20250811163714-f333d1836f04 h1:19udTAaCji0mnKq6oZ9STqPk3fvp5EU+Tph11ftM+GM=
 github.com/tknie/ecoflow v0.0.0-20250811163714-f333d1836f04/go.mod h1:6hSJ0b+loe2wPXpldHoaB+geCum/FBIMKy2SINGLjzc=
+github.com/tknie/ecoflow v0.0.0-20250812120510-1b4ea8f4206f h1:p2Gjdh9SoUDy13thysTTFEnfwhmd2vDFVtGwhQE++nA=
+github.com/tknie/ecoflow v0.0.0-20250812120510-1b4ea8f4206f/go.mod h1:uU3dI5f0IyUPlqBtmS2bk4Uv5bzyyJieE+0QzdfgIO8=
 github.com/tknie/errorrepo v0.1.0 h1:pOt79EWL4P4UjPzXknNcdAr01fjgF38XY1u1ZzHttqo=
 github.com/tknie/errorrepo v0.1.0/go.mod h1:K4bEhPce5B7ybIptX2D2mpRfjWehStjeUG1fiegwoq0=
 github.com/tknie/flynn v0.9.8 h1:vyiiy9HPn+g4Fsq7sattQYLq5pfMnpDmYJshIpiHJXQ=
@@ -85,6 +87,8 @@ golang.org/x/exp v0.0.0-20250718183923-645b1fa84792 h1:R9PFI6EUdfVKgwKjZef7QIwGc
 golang.org/x/exp v0.0.0-20250718183923-645b1fa84792/go.mod h1:A+z0yzpGtvnG90cToK5n2tu8UJVP2XUATh+r+sfOOOc=
 golang.org/x/exp v0.0.0-20250808145144-a408d31f581a h1:Y+7uR/b1Mw2iSXZ3G//1haIiSElDQZ8KWh0h+sZPG90=
 golang.org/x/exp v0.0.0-20250808145144-a408d31f581a/go.mod h1:rT6SFzZ7oxADUDx58pcaKFTcZ+inxAa9fTrYx/uVYwg=
+golang.org/x/exp v0.0.0-20250811191247-51f88131bc50 h1:3yiSh9fhy5/RhCSntf4Sy0Tnx50DmMpQ4MQdKKk4yg4=
+golang.org/x/exp v0.0.0-20250811191247-51f88131bc50/go.mod h1:rT6SFzZ7oxADUDx58pcaKFTcZ+inxAa9fTrYx/uVYwg=
 golang.org/x/net v0.42.0 h1:jzkYrhi3YQWD6MLBJcsklgQsoAcw89EcZbJw8Z614hs=
 golang.org/x/net v0.42.0/go.mod h1:FF1RA5d3u7nAYA4z2TkclSCKh68eSXtiFwcWQpPXdt8=
 golang.org/x/net v0.43.0 h1:lat02VYK2j4aLzMzecihNvTlJNQUq316m2Mr9rnM6YE=
