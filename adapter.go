@@ -114,7 +114,7 @@ func ReadCurrentFlow() ([]*parameter, error) {
 		EcoflowTable string
 		EnergyTable  string
 		SerialNumber string
-	}{EcoflowTable: tn, EnergyTable: tnHome, SerialNumber: adapter.EcoflowConfig.MicroConverter[]})
+	}{EcoflowTable: tn, EnergyTable: tnHome, SerialNumber: adapter.EcoflowConfig.MicroConverter[0]})
 	if err != nil {
 		panic(err)
 	}
