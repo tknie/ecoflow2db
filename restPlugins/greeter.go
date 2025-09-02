@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -25,8 +24,8 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/tknie/clu/api"
 	"github.com/tknie/clu/plugins"
-	"github.com/tknie/ecoflow"
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 type greeting string
@@ -73,39 +72,35 @@ func parseQuery(req *http.Request) (service string, values url.Values) {
 	return service, val
 }
 
+// CallExtendGet call extend GET request
 func (g greeting) CallExtendGet(path string, req *http.Request) (r api.CallExtendRes, _ error) {
 	callPath := strings.ReplaceAll(path, g.EntryPoint()[0]+"/", "")
-	fmt.Println("Ecoflow plugin GET call received:" + path)
-	fmt.Println("Callpath plugin              : <" + callPath + ">")
+	services.ServerMessage("Ecoflow plugin GET call received: %s", path)
+	log.Log.Debugf("Callpath plugin              : <" + callPath + ">")
 	service, valMap := parseQuery(req)
 
-	d := make(api.ResponseRaw)
 	switch strings.ToLower(callPath) {
 	case "health":
+		d := make(api.ResponseRaw)
 		for k, v := range valMap {
 			fmt.Println(k, ":", v)
 		}
 		status := "ok"
 		d["Health"] = jx.Raw([]byte("\"" + status + "\""))
+		return &d, nil
+	case "deviceData":
+		return getDeviceImportant(req, "data")
+	case "device":
+		return getDeviceImportant(req, "")
+	case "devices":
+		return getDeviceInfo(req)
 	default:
+		d := make(api.ResponseRaw)
 		fmt.Println("Unknown service: " + callPath + " -> " + service + " call status")
 		generateStatus(d)
+		return &d, nil
 	}
 
-	return &d, nil
-
-}
-
-func prepareEcoflow() *ecoflow.Client {
-
-	accessKey := os.ExpandEnv("ECOFLOW_ACCESSKEY")
-	secretKey := os.ExpandEnv("ECOFLOW_SECRETKEY")
-
-	log.Log.Debugf("AccessKey: %v", accessKey)
-	log.Log.Debugf("SecretKey: %v", secretKey)
-	client := ecoflow.NewClient(accessKey, secretKey)
-	client.RefreshDeviceList()
-	return client
 }
 
 func (g greeting) CallExtendPut(path string, req *http.Request) (r api.TriggerExtendRes, _ error) {
