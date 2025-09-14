@@ -63,6 +63,10 @@ func main() {
 
 	flag.Parse()
 
+	if flowControlFile == "" {
+		flowControlFile = os.Getenv("ECOFLOW2DB_CONFIG")
+	}
+
 	if flowControlFile != "" {
 		ecoflow2db.LoadConfig(flowControlFile)
 	}
