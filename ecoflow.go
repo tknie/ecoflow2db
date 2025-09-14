@@ -59,8 +59,6 @@ func InitEcoflow() {
 
 // InitMqtt initialize MQTT listener
 func InitMqtt(user, password string) {
-	ecoflow.InitMqtt(user, password)
-
 	mqttid = connnectDatabase()
 	log.Log.Debugf("Connecting MQTT Ecoflow connect")
 	services.ServerMessage("Connecting MQTT client")
