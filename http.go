@@ -36,6 +36,10 @@ var LoopSeconds = DefaultSeconds
 var httpDone = make(chan bool, 1)
 var httpCounter = uint64(0)
 
+func init() {
+	ecoflow.Callback = Callback
+}
+
 // httpParameterStore main thread reading information with HTTP request
 // and store them in the database
 func httpParameterStore(client *ecoflow.Client) {
