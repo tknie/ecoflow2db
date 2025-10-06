@@ -4,7 +4,7 @@ go 1.24.5
 
 require (
 	github.com/go-faster/jx v1.1.0
-	github.com/ogen-go/ogen v1.15.1
+	github.com/ogen-go/ogen v1.16.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
 	github.com/tknie/clu v0.0.0-20250902181926-28fbfe6b30c1
@@ -50,6 +50,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/tknie/adabas-go-api v1.7.12 // indirect
 	github.com/tknie/errorrepo v0.1.0 // indirect
 	github.com/tknie/goheif v0.0.0-20241029104240-29478ba33138 // indirect
