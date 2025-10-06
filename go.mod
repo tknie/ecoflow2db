@@ -7,8 +7,8 @@ require (
 	github.com/ogen-go/ogen v1.16.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
-	github.com/tknie/clu v0.0.0-20250902181926-28fbfe6b30c1
-	github.com/tknie/ecoflow v0.0.0-20250914153321-b7d22f00c05f
+	github.com/tknie/clu v0.0.0-20250930070414-a4f836bb0449
+	github.com/tknie/ecoflow v0.0.0-20250930070842-cf623e47623f
 	github.com/tknie/flynn v0.9.9
 	github.com/tknie/log v0.1.0
 	golang.org/x/text v0.29.0
@@ -18,7 +18,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
 	github.com/VictoriaMetrics/easyproto v0.1.4 // indirect
-	github.com/coreos/go-oidc/v3 v3.15.0 // indirect
+	github.com/coreos/go-oidc/v3 v3.16.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -28,9 +28,9 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.2 // indirect
-	github.com/go-ldap/ldap/v3 v3.4.11 // indirect
-	github.com/go-logfmt/logfmt v0.6.0 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
+	github.com/go-ldap/ldap/v3 v3.4.12 // indirect
+	github.com/go-logfmt/logfmt v0.6.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/errors v0.22.3 // indirect
@@ -62,10 +62,10 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
-	golang.org/x/exp v0.0.0-20250911091902-df9299821621 // indirect
+	golang.org/x/exp v0.0.0-20251002181428-27f1f14c8bb9 // indirect
 	golang.org/x/image v0.31.0 // indirect
 	golang.org/x/oauth2 v0.31.0 // indirect
-	google.golang.org/protobuf v1.36.9 // indirect
+	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
