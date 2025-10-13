@@ -11,7 +11,7 @@ require (
 	github.com/tknie/ecoflow v0.0.0-20250930070842-cf623e47623f
 	github.com/tknie/flynn v0.9.9
 	github.com/tknie/log v0.1.0
-	golang.org/x/text v0.29.0
+	golang.org/x/text v0.30.0
 )
 
 require (
