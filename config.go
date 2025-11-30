@@ -102,4 +102,7 @@ func LoadConfig(file string) {
 			adapter.DefaultConfig.MaxRequest = defaultMaxRequest
 		}
 	}
+	if adapter.DatabaseConfig.TableName == "" {
+		adapter.DatabaseConfig.TableName = os.Getenv("ECOFLOW_DB_TABLENAME")
+	}
 }
