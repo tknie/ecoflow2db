@@ -71,24 +71,23 @@ func main() {
 		ecoflow2db.LoadConfig(flowControlFile)
 	}
 
-	if powervalue > 0 {
+	// Check services to be started
+	switch {
+	case powervalue > 0:
 		services.ServerMessage("Set new power value for powerstream to %f", powervalue)
 		ecoflow2db.SetEnvironmentPowerConsumption(powervalue)
 		return
-	}
-
-	if caracon {
+	case caracon:
 		services.ServerMessage("Set AC car power on")
 		ecoflow2db.SetCarACOn(serialNumber, true)
 		return
-	}
-
-	if listDevices {
+	case listDevices:
 		services.ServerMessage("List of Ecoflow devices")
 		ecoflow2db.ListDevices()
 		return
 	}
 
+	// Go into server mode
 	ecoflow2db.StatLoopMinutes = time.Duration(statSecs)
 
 	ecoflow2db.InitDatabase()

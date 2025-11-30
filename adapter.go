@@ -174,10 +174,10 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(lastLimitEntries[0].powerout) - 10
 		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
-			client.SetEnvironmentPowerConsumption(serialNumberConverter, reduceToRequest)
+			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], reduceToRequest)
 			lastRequested = int64(reduceToRequest)
 		} else {
-			client.SetEnvironmentPowerConsumption(serialNumberConverter, float64(adapter.DefaultConfig.BaseRequest))
+			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(adapter.DefaultConfig.BaseRequest))
 			lastRequested = adapter.DefaultConfig.BaseRequest
 		}
 	}
@@ -227,7 +227,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if newRequested > adapter.DefaultConfig.BaseRequest {
 		fmt.Printf("Set request: %d\n", newRequested)
 		if !test {
-			client.SetEnvironmentPowerConsumption(serialNumberConverter, float64(newRequested))
+			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(newRequested))
 		}
 	}
 

@@ -45,6 +45,9 @@ func init() {
 func httpParameterStore(client *ecoflow.Client) {
 	id := connnectDatabase()
 	devices := client.GetDevices()
+	if devices == nil {
+		log.Log.Fatal("Devices empty")
+	}
 
 	for _, l := range devices.Devices {
 		// get all parameters for device
