@@ -26,18 +26,25 @@ var mqttid common.RegDbID
 var MqttDisable = false
 var client *ecoflow.Client
 
-var serialNumberConverter string
-
 func prepareEcoflow() {
 
 	accessKey := os.ExpandEnv(adapter.EcoflowConfig.AccessKey)
 	secretKey := os.ExpandEnv(adapter.EcoflowConfig.SecretKey)
+	if accessKey == "" {
+		accessKey = os.ExpandEnv("${ECOFLOW_ACCESS_KEY}")
+	}
+	if secretKey == "" {
+		secretKey = os.ExpandEnv("${ECOFLOW_SECRET_KEY}")
+	}
 
 	log.Log.Debugf("AccessKey: %v", accessKey)
 	log.Log.Debugf("SecretKey: %v", secretKey)
 	client = ecoflow.NewClient(accessKey, secretKey)
 	client.RefreshDeviceList()
-	serialNumberConverter = os.Getenv("ECOFLOW_DEVICE_SN")
+	serialNumberConverter := os.Getenv("ECOFLOW_DEVICE_SN")
+	if serialNumberConverter != "" {
+		adapter.EcoflowConfig.MicroConverter = append(adapter.EcoflowConfig.MicroConverter, serialNumberConverter)
+	}
 }
 
 // InitEcoflow init ecoflow MQTT
@@ -70,7 +77,7 @@ func InitMqtt(user, password string) {
 
 func SetEnvironmentPowerConsumption(value float64) {
 	prepareEcoflow()
-	client.SetEnvironmentPowerConsumption(serialNumberConverter, value)
+	client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], value)
 }
 
 func SetCarACOn(sn string, turnOn bool) {
