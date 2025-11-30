@@ -86,7 +86,7 @@ func storeDatabase() {
 	storeid := connnectDatabase()
 	for m := range msgChan {
 		tn := strings.ToLower("mqtt_" + ecoflow.GetTypeName(m.object))
-		m.checkTable(tn, storeid)
+		m.checkStoreElementTable(tn, storeid)
 
 		log.Log.Debugf("Insert structFields: %T into tn", m.object)
 		fields := []string{"*"}
@@ -108,9 +108,12 @@ func storeDatabase() {
 }
 
 // checkTable check if table is available and if not, create it
-func (m *storeElement) checkTable(tn string, storeid common.RegDbID) {
+func (m *storeElement) checkStoreElementTable(tn string, storeid common.RegDbID) {
+	if tn == "" {
+		log.Log.Fatal("Check failed, database not given")
+	}
 	if !slices.Contains(dbTables, tn) {
-		services.ServerMessage("Database %s needed to be created", tn)
+		services.ServerMessage("Database %s need to be created", tn)
 		err := storeid.CreateTable(tn, m.object)
 		if err != nil {
 			log.Log.Fatal("Error creating database table: ", err)
@@ -121,8 +124,11 @@ func (m *storeElement) checkTable(tn string, storeid common.RegDbID) {
 
 // checkTable check table and if not available, create table
 func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*common.Column) bool {
+	if tn == "" {
+		log.Log.Fatal("Database not given")
+	}
 	if !slices.Contains(dbTables, strings.ToLower(tn)) {
-		services.ServerMessage("Database %s needed to be created", tn)
+		services.ServerMessage("Database check failed, %s need to be created", tn)
 		err := storeid.CreateTable(tn, generateColumns())
 		if err != nil {
 			services.ServerMessage("Shuting down ... error creating database for %s : %v", tn, err)

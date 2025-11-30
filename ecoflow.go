@@ -45,6 +45,9 @@ func prepareEcoflow() {
 	if serialNumberConverter != "" {
 		adapter.EcoflowConfig.MicroConverter = append(adapter.EcoflowConfig.MicroConverter, serialNumberConverter)
 	}
+	if adapter.DatabaseConfig.TableName == "" {
+		adapter.DatabaseConfig.TableName = os.Getenv("ECOFLOW_DB_TABLENAME")
+	}
 }
 
 // InitEcoflow init ecoflow MQTT
