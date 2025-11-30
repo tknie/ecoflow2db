@@ -48,6 +48,10 @@ func prepareEcoflow() {
 	if adapter.DatabaseConfig.TableName == "" {
 		adapter.DatabaseConfig.TableName = os.Getenv("ECOFLOW_DB_TABLENAME")
 	}
+	if adapter.DatabaseConfig.Table == "" {
+		adapter.DatabaseConfig.Table = os.Getenv("ECOFLOW_DB_TABLENAME")
+	}
+
 }
 
 // InitEcoflow init ecoflow MQTT

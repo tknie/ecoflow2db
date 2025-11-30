@@ -125,7 +125,7 @@ func (m *storeElement) checkStoreElementTable(tn string, storeid common.RegDbID)
 // checkTable check table and if not available, create table
 func checkTable(storeid common.RegDbID, tn string, generateColumns func() []*common.Column) bool {
 	if tn == "" {
-		log.Log.Fatal("Database not given")
+		log.Log.Fatal("Error check table, database not defined")
 	}
 	if !slices.Contains(dbTables, strings.ToLower(tn)) {
 		services.ServerMessage("Database check failed, %s need to be created", tn)
