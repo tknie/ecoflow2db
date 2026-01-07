@@ -72,6 +72,8 @@ github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7Ulw
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
 github.com/jackc/pgx/v5 v5.7.6 h1:rWQc5FwZSPX58r1OQmkuaNicxdmExaEz5A2DO2hUuTk=
 github.com/jackc/pgx/v5 v5.7.6/go.mod h1:aruU7o91Tc2q2cFp5h4uP3f6ztExVpyVv88Xl/8Vl8M=
+github.com/jackc/pgx/v5 v5.8.0 h1:TYPDoleBBme0xGSAX3/+NujXXtpZn9HBONkQC7IEZSo=
+github.com/jackc/pgx/v5 v5.8.0/go.mod h1:QVeDInX2m9VyzvNeiCJVjCkNFqzsNb43204HshNSZKw=
 github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/jcmturner/aescts/v2 v2.0.0 h1:9YKLH6ey7H4eDBXW8khjYslgyqG2xZikXP0EQFKrle8=
@@ -92,6 +94,8 @@ github.com/kovidgoyal/go-shm v1.0.0 h1:HJEel9D1F9YhULvClEHJLawoRSj/1u/EDV7MJbBPg
 github.com/kovidgoyal/go-shm v1.0.0/go.mod h1:Yzb80Xf9L3kaoB2RGok9hHwMIt7Oif61kT6t3+VnZds=
 github.com/kovidgoyal/imaging v1.8.17 h1:IDc7lbN2Qrn8s50y7Zt355HhOc+jUpvsScYAaGCW8vs=
 github.com/kovidgoyal/imaging v1.8.17/go.mod h1:uD4XKN42lLV9du0TsPkwi53yw23vz/qDmfpiDWCSUCE=
+github.com/kovidgoyal/imaging v1.8.18 h1:42JCqJnQBzBo0hGllLEJVYDARWXPP9MT3HgiTno9Chc=
+github.com/kovidgoyal/imaging v1.8.18/go.mod h1:bqjHpeAxSuTLvKob6HuqAr9td2wP9G54Snbgd+1QLoU=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
@@ -128,6 +132,8 @@ github.com/tknie/adabas-go-api v1.7.12 h1:ZggANtYozNaRXkr+93ah9izylLBFiX51Kn5Vqh
 github.com/tknie/adabas-go-api v1.7.12/go.mod h1:BXTeSN6NNYptF3MkelAg8opTB3AGDLbzipFR1pzgfvU=
 github.com/tknie/clu v0.0.0-20251215195907-6a0417bb477d h1:SXDLc6kJiGf1W6RfZlufoSmE0vL6twjQDpt++J+IryA=
 github.com/tknie/clu v0.0.0-20251215195907-6a0417bb477d/go.mod h1:+O/Ep2IrkARiZGBHS0kdSSv6fboWL6pLE0R+wq2swOA=
+github.com/tknie/clu v0.0.0-20260107183950-237338bc8190 h1:PwqgPyBRsLKQXLZCKQ0miUmcZfrpdkOu6fVbmJYvPhI=
+github.com/tknie/clu v0.0.0-20260107183950-237338bc8190/go.mod h1:UXeduh3NmHNn8b/klJrf1aLePI2dKQaAnDiJJEq7zHc=
 github.com/tknie/ecoflow v0.0.0-20251110183001-7166fda54b11 h1:5OIbKfhR2uVpOptmeNUk1V4d41boaG0sx1J1rLcZjDw=
 github.com/tknie/ecoflow v0.0.0-20251110183001-7166fda54b11/go.mod h1:gkzCvq2atWTsHtYuMr+bYIFFyvhR9jQTcw8D8yOKDFc=
 github.com/tknie/errorrepo v0.1.0 h1:pOt79EWL4P4UjPzXknNcdAr01fjgF38XY1u1ZzHttqo=

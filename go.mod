@@ -7,7 +7,7 @@ require (
 	github.com/ogen-go/ogen v1.18.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
-	github.com/tknie/clu v0.0.0-20251215195907-6a0417bb477d
+	github.com/tknie/clu v0.0.0-20260107183950-237338bc8190
 	github.com/tknie/ecoflow v0.0.0-20251110183001-7166fda54b11
 	github.com/tknie/flynn v0.9.9
 	github.com/tknie/log v0.1.0
@@ -42,11 +42,11 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.7.6 // indirect
+	github.com/jackc/pgx/v5 v5.8.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/kovidgoyal/go-parallel v1.1.1 // indirect
 	github.com/kovidgoyal/go-shm v1.0.0 // indirect
-	github.com/kovidgoyal/imaging v1.8.17 // indirect
+	github.com/kovidgoyal/imaging v1.8.18 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
