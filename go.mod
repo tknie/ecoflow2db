@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tknie/clu v0.0.0-20260107183950-237338bc8190
 	github.com/tknie/ecoflow v0.0.0-20251110183001-7166fda54b11
-	github.com/tknie/flynn v0.9.9
+	github.com/tknie/flynn v0.9.10
 	github.com/tknie/log v0.1.0
 	golang.org/x/text v0.32.0
 )
