@@ -9,9 +9,9 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tknie/clu v0.0.0-20260108175659-f227537d167a
 	github.com/tknie/ecoflow v0.0.0-20251110183001-7166fda54b11
-	github.com/tknie/flynn v0.9.10
-	github.com/tknie/log v0.1.0
-	golang.org/x/text v0.33.0
+	github.com/tknie/flynn v0.9.11
+	github.com/tknie/log v0.4.0
+	golang.org/x/text v0.34.0
 )
 
 require (
@@ -59,15 +59,15 @@ require (
 	github.com/tknie/goheif v0.0.0-20241029104240-29478ba33138 // indirect
 	github.com/tknie/pam v0.0.0-20241226202719-7fe89c1216fb // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.39.0 // indirect
-	go.opentelemetry.io/otel/metric v1.39.0 // indirect
-	go.opentelemetry.io/otel/trace v1.39.0 // indirect
+	go.opentelemetry.io/otel v1.40.0 // indirect
+	go.opentelemetry.io/otel/metric v1.40.0 // indirect
+	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
-	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
-	golang.org/x/image v0.35.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
+	golang.org/x/image v0.36.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -78,7 +78,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/tknie/services v0.5.0
-	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/net v0.50.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 )
