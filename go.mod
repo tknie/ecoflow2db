@@ -4,7 +4,7 @@ go 1.24.5
 
 require (
 	github.com/go-faster/jx v1.2.0
-	github.com/ogen-go/ogen v1.18.0
+	github.com/ogen-go/ogen v1.19.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	github.com/tknie/clu v0.0.0-20260108175659-f227537d167a
