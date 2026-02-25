@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright 2025 Thorsten A. Knieling
+# Copyright 2025-2026 Thorsten A. Knieling
 #
 # SPDX-License-Identifier: Apache-2.0
 #
