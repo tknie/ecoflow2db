@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/go-faster/jx v1.2.0
-	github.com/ogen-go/ogen v1.20.0
+	github.com/ogen-go/ogen v1.20.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	github.com/tknie/clu v0.0.0-20260225074730-f76c0facf786
@@ -78,7 +78,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/tknie/services v0.5.0
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 )
