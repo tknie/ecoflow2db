@@ -29,7 +29,6 @@ type adapterConfig struct {
 
 type defaultConfig struct {
 	BaseRequest   int64  `yaml:"baseWatt"`
-	MaxRequest    int64  `yaml:"maximumWatt"`
 	LowerBatLimit int64  `yaml:"lowerBatLimit"`
 	UpperBatLimit int64  `yaml:"upperBatLimit"`
 	Debug         string `yaml:"debug"`
@@ -43,11 +42,14 @@ type databaseConfig struct {
 }
 
 type ecoflowConfig struct {
-	User           string   `yaml:"user"`
-	Password       string   `yaml:"password"`
-	AccessKey      string   `yaml:"accessKey"`
-	SecretKey      string   `yaml:"secretKey"`
-	MicroConverter []string `yaml:"microConverter"`
+	CheckBatteryLimits      bool     `yaml:"checkBatteryLimits"`
+	CheckBatteryLimitsTests bool     `yaml:"checkBatteryLimitsTests"`
+	User                    string   `yaml:"user"`
+	Password                string   `yaml:"password"`
+	AccessKey               string   `yaml:"accessKey"`
+	SecretKey               string   `yaml:"secretKey"`
+	MicroConverter          []string `yaml:"microConverter"`
+	Battery                 []string `yaml:"battery"`
 }
 
 const defaultBaseRequest = 170
@@ -60,7 +62,6 @@ var adapter = &adapterConfig{
 }
 
 var FlowLoopSeconds = DefaultSeconds
-var header = ""
 
 // ReadConfig read config file
 func readConfig(file string) ([]byte, error) {
@@ -98,8 +99,8 @@ func LoadConfig(file string) {
 		if adapter.DefaultConfig.BaseRequest == 0 {
 			adapter.DefaultConfig.BaseRequest = defaultBaseRequest
 		}
-		if adapter.DefaultConfig.MaxRequest == 0 {
-			adapter.DefaultConfig.MaxRequest = defaultMaxRequest
+		if adapter.DefaultConfig.UpperBatLimit == 0 {
+			adapter.DefaultConfig.UpperBatLimit = defaultMaxRequest
 		}
 	}
 	if adapter.DatabaseConfig.TableName == "" {

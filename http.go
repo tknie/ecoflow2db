@@ -84,6 +84,8 @@ func httpParameterStore(client *ecoflow.Client) {
 	// Loop reading and writing data into table
 	counter := uint64(0)
 	needRefresh := false
+	statusChange := make(map[string]bool)
+
 	for {
 		counter++
 		select {
@@ -116,9 +118,22 @@ func httpParameterStore(client *ecoflow.Client) {
 						id = connnectDatabase()
 					}
 					httpCounter++
+					status, ok := statusChange[l.SN]
+					if !ok {
+						statusChange[l.SN] = l.Online == 1
+						status = false
+					}
 					if l.Online != 1 {
-						services.ServerMessage(l.SN + " device is offline")
+						if status && !ok {
+							services.ServerMessage(l.SN + " device is offline")
+						}
+						statusChange[l.SN] = false
 						needRefresh = true
+					} else {
+						statusChange[l.SN] = true
+						if !status {
+							services.ServerMessage(l.SN + " device is online")
+						}
 					}
 				}
 			}
@@ -206,7 +221,6 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 		// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
 		name := "eco_" + strings.ReplaceAll(k, ".", "_")
 		fields = append(fields, name)
-		log.Log.Debugf(" %s=%v %T -> %s\n", k, v, v, name)
 		switch val := v.(type) {
 		case string:
 			columns = append(columns, val)

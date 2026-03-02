@@ -59,6 +59,9 @@ func InitEcoflow() {
 	prepareEcoflow()
 	user := adapter.EcoflowConfig.User
 	password := adapter.EcoflowConfig.Password
+	if adapter.EcoflowConfig.CheckBatteryLimits {
+		go StartFlow(adapter.EcoflowConfig.CheckBatteryLimitsTests)
+	}
 	// Start statistics output
 	go httpParameterStore(client)
 	startStatLoop()

@@ -24,32 +24,63 @@ import (
 )
 
 const SELECT_GET_ALL_PARAMETER = `
+with battery as (
 select
-	h.inserted_on at TIME zone 'UTC' at TIME zone 'GMT',
-	(dhzgqq.eco_20_1_pv1inputwatts + dhzgqq.eco_20_1_pv2inputwatts)/ 10 as "solargen" ,
-	abs(least( dhzgqq.eco_20_1_batinputwatts::float / 10, 0)) as "batinput",
-	abs(greatest( dhzgqq.eco_20_1_batinputwatts::float / 10, 0)) as "batout",
-	dhzgqq.eco_20_1_genewatt / 10 as "housein",
-	abs(dhzgqq.eco_20_1_gridconswatts::float / 10) as "gridwatts",
-	dhzgqq.eco_20_1_invdemandwatts / 10 as "requested",
-	dhzgqq.eco_20_1_bmsreqchgamp  as "batreqfill",
+	to_char(dq.eco_timestamp at TIME zone 'GMT', 'YYYYMMDD HH24MI') as timest,
+	row_number() over (partition by to_char(dq.eco_timestamp at TIME zone 'GMT' , 'YYYYMMDD HH24MI')) as rn,
+	eco_bms_bmsstatus_actsoc as batfill
+from
+	{{ .EcoflowTable }} dq
+where
+	dq.eco_serial_number = upper('{{ .BatteryConverterSerialNumber }}')
+	and eco_timestamp at TIME zone 'GMT' >= NOW() - '30 minute'::interval
+order by
+	dq.eco_timestamp desc
+),
+adapter as (
+select
+	dq.eco_timestamp at TIME zone 'GMT',
+	to_char(dq.eco_timestamp at TIME zone 'GMT', 'YYYYMMDD HH24MI') as timest,
+	row_number() over (partition by to_char(dq.eco_timestamp at TIME zone 'GMT', 'YYYYMMDD HH24MI')) as rn,
+		(eco_20_1_pv1inputwatts + eco_20_1_pv2inputwatts)/ 10 as "solargen" ,
+	abs(least( eco_20_1_batinputwatts::float / 10, 0)) as "batinput",
+	abs(greatest( eco_20_1_batinputwatts::float / 10, 0)) as "batout",
+	eco_20_1_genewatt / 10 as "housein",
+	abs(eco_20_1_gridconswatts::float / 10) as "gridwatts",
+	eco_20_1_invdemandwatts / 10 as "requested",
+	eco_20_1_bmsreqchgamp as "batreqfill"
+from
+	{{ .EcoflowTable }} dq
+where
+	dq.eco_serial_number = upper('{{ .ConverterSerialNumber }}')
+		and dq.eco_timestamp at TIME zone 'GMT' >= NOW() - '30 minute'::interval
+	order by
+		dq.eco_timestamp desc
+)
+select
+		h.inserted_on ,
+	b.batfill,
 	h.powercurr,
 	h.powerout,
-	drzsq.eco_bms_bmsstatus_actsoc as batfill
+	a.solargen,
+	a.batinput ,
+	a.batout ,
+	a.housein ,
+	a.gridwatts,
+	a.requested ,
+	a.batreqfill
 from
-	{{ .EcoflowTable }} dhzgqq,
-	{{ .EnergyTable }} h, {{ .EcoflowTable }} drzsq 
+	battery b
+inner join {{ .EnergyTable }} h on
+	b.timest = to_char(h.inserted_on , 'YYYYMMDD HH24MI')
+inner join adapter a on
+	a.timest = to_char(h.inserted_on , 'YYYYMMDD HH24MI')
 where
-	dhzgqq.eco_serial_number = upper('hw51zeh49g9q1664') and drzsq.eco_serial_number = upper('{{ .SerialNumber }}')
-	and h.inserted_on >= NOW() - '30 minute'::INTERVAL
-	and dhzgqq.eco_timestamp >= NOW() - '30 minute'::INTERVAL
-	and drzsq.eco_timestamp >= NOW() - '30 minute'::INTERVAL
-	and to_char(to_timestamp(dhzgqq.eco_20_1_utctime) , 'YYYYMMDD HH24MI') = to_char(h.inserted_on , 'YYYYMMDD HH24MI')
-	and to_char(drzsq.eco_timestamp , 'YYYYMMDD HH24MI') = to_char(h.inserted_on , 'YYYYMMDD HH24MI')
+	b.rn = 1
+	and a.rn = 1
 order by
-	h.inserted_on desc,
-	dhzgqq.eco_timestamp desc
-limit 10
+	b.timest desc,
+	h.inserted_on desc
 `
 
 type parameter struct {
@@ -83,12 +114,13 @@ func (p *parameter) toString() string {
 
 func StartFlow(test bool) {
 	counter := 0
+	services.ServerMessage("Start Ecoflow flow analyze loop with %d seconds wait time", FlowLoopSeconds)
 	for {
 		cFlow, err := ReadCurrentFlow()
 		if err != nil {
 			services.ServerMessage("Ecoflow analyze error: %v", err)
 		} else {
-			services.ServerMessage("Ecoflow analyze called")
+			log.Log.Debugf("Ecoflow analyze called")
 			AnalyzeEnergyHistory(cFlow, test)
 		}
 		counter++
@@ -102,7 +134,7 @@ func StartFlow(test bool) {
 }
 
 func ReadCurrentFlow() ([]*parameter, error) {
-
+	log.Log.Debugf("Read current flow")
 	tn := adapter.DatabaseConfig.Table
 	tnHome := adapter.DatabaseConfig.EnergyTable
 	tmpl, err := template.New("sql").Parse(SELECT_GET_ALL_PARAMETER)
@@ -111,19 +143,24 @@ func ReadCurrentFlow() ([]*parameter, error) {
 	}
 	var buffer bytes.Buffer
 	err = tmpl.Execute(&buffer, struct {
-		EcoflowTable string
-		EnergyTable  string
-		SerialNumber string
-	}{EcoflowTable: tn, EnergyTable: tnHome, SerialNumber: adapter.EcoflowConfig.MicroConverter[0]})
+		EcoflowTable                 string
+		EnergyTable                  string
+		ConverterSerialNumber        string
+		BatteryConverterSerialNumber string
+	}{EcoflowTable: tn, EnergyTable: tnHome,
+		ConverterSerialNumber:        adapter.EcoflowConfig.MicroConverter[0],
+		BatteryConverterSerialNumber: adapter.EcoflowConfig.Battery[0]})
 	if err != nil {
 		panic(err)
 	}
 	readid := connnectDatabase()
-	headerOutput := false
-	fieldMap := make(map[string]int)
+	headerOutput := true
 	lastLimitEntries := make([]*parameter, 0)
+	fieldMap := make(map[string]int)
 	err = readBatch(readid, tn, buffer.String(), func(search *common.Query, result *common.Result) error {
-		if !headerOutput {
+		if headerOutput {
+			log.Log.Debugf("LEN: %d->%d", len(fieldMap), len(result.Fields))
+			header := ""
 			for i, field := range result.Fields {
 				switch result.Rows[i].(type) {
 				case time.Time:
@@ -133,11 +170,9 @@ func ReadCurrentFlow() ([]*parameter, error) {
 				}
 				fieldMap[field] = i
 			}
-			fmt.Println(header)
-			headerOutput = true
+			log.Log.Debugf("Header: %s", header)
+			headerOutput = false
 		}
-		// fmt.Printf("MMM %#v\n", fieldMap)
-		// fmt.Printf("MMM %#v\n", result.Fields)
 		p := &parameter{}
 		p.timestamp = result.Rows[fieldMap["timezone"]].(time.Time)
 		p.solargen = result.Rows[fieldMap["solargen"]].(int64)
@@ -150,38 +185,42 @@ func ReadCurrentFlow() ([]*parameter, error) {
 		p.powercurr = result.Rows[fieldMap["powercurr"]].(int32)
 		p.powerout = result.Rows[fieldMap["powerout"]].(int32)
 		p.batfill = result.Rows[fieldMap["batfill"]].(int64)
-		// fmt.Printf("parameter %v %#v\n", p.timestamp, p)
 		lastLimitEntries = append(lastLimitEntries, p)
-		fmt.Println(p.toString())
+		log.Log.Debugf("Record: %s", p.toString())
 		return nil
 	})
 	if err != nil {
+		log.Log.Debugf("Read flow error: %v", err)
 		return nil, err
 	}
+	log.Log.Debugf("Read %d flow entries", len(lastLimitEntries))
 	return lastLimitEntries, nil
 }
 
 func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if len(lastLimitEntries) == 0 {
+		log.Log.Debugf("No last limit entries found")
 		return
 	}
 	log.Log.Debugf("Requested:  %d", lastLimitEntries[0].requested)
 	log.Log.Debugf("Powerout:   %d", lastLimitEntries[0].powerout)
 	lastRequested := lastLimitEntries[0].requested
+	newRequested := lastRequested
 	powerout := lastLimitEntries[0].powerout
 	if powerout > 0 {
-		log.Log.Debugf("Reduce by:  %d", lastLimitEntries[0].powerout)
-		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(lastLimitEntries[0].powerout) - 10
+		log.Log.Debugf("PowerOut found:  %d", powerout)
+		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(powerout) - 10
 		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
-			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], reduceToRequest)
-			lastRequested = int64(reduceToRequest)
+			newRequested = int64(reduceToRequest)
 		} else {
-			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(adapter.DefaultConfig.BaseRequest))
-			lastRequested = adapter.DefaultConfig.BaseRequest
+			newRequested = adapter.DefaultConfig.BaseRequest
 		}
+		if !test && newRequested != lastRequested {
+			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(newRequested))
+		}
+		return
 	}
-	newRequested := lastLimitEntries[0].requested
 	if lastLimitEntries[0].housein == 0 {
 		if lastLimitEntries[0].requested > adapter.DefaultConfig.BaseRequest {
 			log.Log.Debugf("Set base request: %d", adapter.DefaultConfig.BaseRequest)
@@ -193,9 +232,10 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	sort.SliceStable(lastLimitEntries, func(i, j int) bool {
 		return lastLimitEntries[i].powercurr < lastLimitEntries[j].powercurr
 	})
-	fmt.Println(header)
-	for _, l := range lastLimitEntries {
-		fmt.Println(l.toString())
+	if log.IsDebugLevel() {
+		for _, l := range lastLimitEntries {
+			log.Log.Debugf(l.toString())
+		}
 	}
 	l := len(lastLimitEntries)
 	median := float64(0)
@@ -207,28 +247,31 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		}
 	}
 
-	log.Log.Debugf("Old:      %d", newRequested)
-	log.Log.Debugf("Median:   %d", median)
-	log.Log.Debugf("Minmum:   %d", lastLimitEntries[0].powercurr)
-	log.Log.Debugf("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
-	log.Log.Debugf("Power:    %d", lastLimitEntries[0].housein+int64(lastLimitEntries[0].powercurr))
 	newRequested = lastLimitEntries[0].housein + int64(lastLimitEntries[0].powercurr) - lastRequested
-	log.Log.Debugf("Last:     %d", lastRequested)
-	fmt.Println("NewDiff:  ", newRequested)
-	fmt.Println("MedPower: ", lastRequested+int64(median))
+	if log.IsDebugLevel() {
+		log.Log.Debugf("Old:      %d", lastRequested)
+		log.Log.Debugf("Median:   %f", median)
+		log.Log.Debugf("Minmum:   %d", lastLimitEntries[0].powercurr)
+		log.Log.Debugf("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
+		log.Log.Debugf("Power:    %d", lastLimitEntries[0].housein+int64(lastLimitEntries[0].powercurr))
+		log.Log.Debugf("Last:     %d", lastRequested)
+		log.Log.Debugf("NewDiff: %d", newRequested)
+		log.Log.Debugf("MedPower: %d", lastRequested+int64(median))
+		log.Log.Debugf("Base: %d", adapter.DefaultConfig.BaseRequest)
+		log.Log.Debugf("Max: %d", adapter.DefaultConfig.UpperBatLimit)
+	}
 	newRequested = lastRequested + newRequested
 	if newRequested < adapter.DefaultConfig.BaseRequest {
 		newRequested = adapter.DefaultConfig.BaseRequest
 	}
-	if newRequested > adapter.DefaultConfig.MaxRequest {
-		newRequested = adapter.DefaultConfig.MaxRequest
+	if newRequested > adapter.DefaultConfig.UpperBatLimit {
+		newRequested = adapter.DefaultConfig.UpperBatLimit
 	}
-	fmt.Println("New:      ", newRequested)
+	log.Log.Debugf("New:      %d", newRequested)
 	if newRequested > adapter.DefaultConfig.BaseRequest {
-		fmt.Printf("Set request: %d\n", newRequested)
-		if !test {
+		log.Log.Debugf("Set request: %d", newRequested)
+		if !test && newRequested != lastRequested {
 			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(newRequested))
 		}
 	}
-
 }
