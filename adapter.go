@@ -206,6 +206,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		log.Log.Infof("No last limit entries found")
 		return
 	}
+	converter := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
 	log.Log.Debugf("Requested:  %d", lastLimitEntries[0].requested)
 	log.Log.Debugf("Powerout:   %d", lastLimitEntries[0].powerout)
 	lastRequested := lastLimitEntries[0].requested
@@ -221,7 +222,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 			newRequested = adapter.DefaultConfig.BaseRequest
 		}
 		if !test && newRequested != lastRequested {
-			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(newRequested))
+			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
 		}
 		return
 	}
@@ -275,7 +276,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if newRequested > adapter.DefaultConfig.BaseRequest {
 		log.Log.Debugf("Set request: %d", newRequested)
 		if !test && newRequested != lastRequested {
-			client.SetEnvironmentPowerConsumption(adapter.EcoflowConfig.MicroConverter[0], float64(newRequested))
+			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
 		}
 	}
 }
