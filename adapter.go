@@ -190,10 +190,13 @@ func ReadCurrentFlow() ([]*parameter, error) {
 		return nil
 	})
 	if err != nil {
-		log.Log.Debugf("Read flow error: %v", err)
+		log.Log.Errorf("Read flow error: %v (sql = %s)", err, buffer.String())
 		return nil, err
 	}
-	log.Log.Debugf("Read %d flow entries", len(lastLimitEntries))
+	if len(lastLimitEntries) == 0 {
+		log.Log.Infof("No flow entries found, sql call: %s", buffer.String())
+	}
+	log.Log.Infof("Read %d flow entries", len(lastLimitEntries))
 	return lastLimitEntries, nil
 }
 
