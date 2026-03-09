@@ -46,12 +46,10 @@ func startStatLoop() {
 			select {
 			case <-ticker.C:
 				var buffer bytes.Buffer
-				buffer.WriteString("Statistics at ")
-				buffer.WriteString(time.Now().Format(layout))
-				buffer.WriteString(":\n")
+				buffer.WriteString("Statistics: ")
 				buffer.WriteString(ecoflow.StatMqtt())
 				for k, v := range mapStatDatabase {
-					buffer.WriteString(fmt.Sprintf("  %s inserted %03d records\n", k, v.counter))
+					buffer.WriteString(fmt.Sprintf("%s inserted %03d records ", k, v.counter))
 				}
 				log.Log.Infof(buffer.String())
 			case <-quit:

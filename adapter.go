@@ -199,7 +199,7 @@ func ReadCurrentFlow() ([]*parameter, error) {
 
 func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if len(lastLimitEntries) == 0 {
-		log.Log.Debugf("No last limit entries found")
+		log.Log.Infof("No last limit entries found")
 		return
 	}
 	log.Log.Debugf("Requested:  %d", lastLimitEntries[0].requested)
@@ -208,7 +208,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	newRequested := lastRequested
 	powerout := lastLimitEntries[0].powerout
 	if powerout > 0 {
-		log.Log.Debugf("PowerOut found:  %d", powerout)
+		log.Log.Infof("PowerOut found:  %d", powerout)
 		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(powerout) - 10
 		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
@@ -267,7 +267,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if newRequested > adapter.DefaultConfig.UpperBatLimit {
 		newRequested = adapter.DefaultConfig.UpperBatLimit
 	}
-	log.Log.Debugf("New:      %d", newRequested)
+	log.Log.Infof("New power consumption:      %d > %d", newRequested, adapter.DefaultConfig.BaseRequest)
 	if newRequested > adapter.DefaultConfig.BaseRequest {
 		log.Log.Debugf("Set request: %d", newRequested)
 		if !test && newRequested != lastRequested {
