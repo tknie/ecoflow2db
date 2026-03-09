@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"os"
 	"sort"
 	"time"
 
@@ -148,8 +149,8 @@ func ReadCurrentFlow() ([]*parameter, error) {
 		ConverterSerialNumber        string
 		BatteryConverterSerialNumber string
 	}{EcoflowTable: tn, EnergyTable: tnHome,
-		ConverterSerialNumber:        adapter.EcoflowConfig.MicroConverter[0],
-		BatteryConverterSerialNumber: adapter.EcoflowConfig.Battery[0]})
+		ConverterSerialNumber:        os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0]),
+		BatteryConverterSerialNumber: os.ExpandEnv(adapter.EcoflowConfig.Battery[0])})
 	if err != nil {
 		panic(err)
 	}
