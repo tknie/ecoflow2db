@@ -11,7 +11,7 @@ require (
 	github.com/tknie/ecoflow v0.0.0-20260225195033-557f2ff9d034
 	github.com/tknie/flynn v0.9.11
 	github.com/tknie/log v0.4.0
-	golang.org/x/text v0.34.0
+	golang.org/x/text v0.35.0
 )
 
 require (
@@ -79,6 +79,6 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/tknie/services v0.5.0
 	golang.org/x/net v0.50.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 )
