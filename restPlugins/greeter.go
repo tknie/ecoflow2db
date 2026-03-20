@@ -44,8 +44,13 @@ func init() {
 }
 
 // Types type of plugin working with
-func (g greeting) Types() []plugins.PluginTypes {
-	return []plugins.PluginTypes{plugins.ExtendPlugin}
+func (g greeting) Info() *plugins.PluginInfo {
+	return &plugins.PluginInfo{
+		Name:         "Ecoflow",
+		Version:      "1.0",
+		Types:        []plugins.PluginTypes{plugins.ExtendPlugin},
+		AbortOnError: false,
+	}
 }
 
 // Name name of the plugin

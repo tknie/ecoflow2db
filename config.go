@@ -28,10 +28,11 @@ type adapterConfig struct {
 }
 
 type defaultConfig struct {
-	BaseRequest   int64  `yaml:"baseWatt"`
-	LowerBatLimit int64  `yaml:"lowerBatLimit"`
-	UpperBatLimit int64  `yaml:"upperBatLimit"`
-	Debug         string `yaml:"debug"`
+	BaseRequest      int64  `yaml:"baseWatt"`
+	LowerBatLimit    int64  `yaml:"lowerBatLimit"`
+	UpperBatLimit    int64  `yaml:"upperBatLimit"`
+	IntermediateSize int64  `yaml:"intermediateSize"`
+	Debug            string `yaml:"debug"`
 }
 
 type databaseConfig struct {

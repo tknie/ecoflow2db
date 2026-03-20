@@ -207,14 +207,15 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		return
 	}
 	converter := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
-	log.Log.Debugf("Requested:  %d", lastLimitEntries[0].requested)
-	log.Log.Debugf("Powerout:   %d", lastLimitEntries[0].powerout)
+	log.Log.Infof("Requested:  %d", lastLimitEntries[0].requested)
+	log.Log.Infof("Powerout:   %d", lastLimitEntries[0].powerout)
 	lastRequested := lastLimitEntries[0].requested
 	newRequested := lastRequested
 	powerout := lastLimitEntries[0].powerout
 	if powerout > 0 {
 		log.Log.Infof("PowerOut found:  %d", powerout)
-		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(powerout) - 10
+		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(powerout) -
+			float64(adapter.DefaultConfig.IntermediateSize)
 		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
 			newRequested = int64(reduceToRequest)
@@ -265,7 +266,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		log.Log.Debugf("Base: %d", adapter.DefaultConfig.BaseRequest)
 		log.Log.Debugf("Max: %d", adapter.DefaultConfig.UpperBatLimit)
 	}
-	newRequested = lastRequested + newRequested
+	newRequested = lastRequested + newRequested + adapter.DefaultConfig.IntermediateSize
 	if newRequested < adapter.DefaultConfig.BaseRequest {
 		newRequested = adapter.DefaultConfig.BaseRequest
 	}
@@ -274,9 +275,11 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	}
 	log.Log.Infof("New power consumption:      %d > %d", newRequested, adapter.DefaultConfig.BaseRequest)
 	if newRequested > adapter.DefaultConfig.BaseRequest {
-		log.Log.Debugf("Set request: %d", newRequested)
+		log.Log.Infof("Set request to converter %s: %d", converter, newRequested)
 		if !test && newRequested != lastRequested {
 			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
+		} else {
+			log.Log.Infof("Test = %v, New requested is same as last requested, no change: %d", test, newRequested)
 		}
 	}
 }
