@@ -212,12 +212,12 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	lastRequested := lastLimitEntries[0].requested
 	newRequested := lastRequested
 	powerout := lastLimitEntries[0].powerout
-	log.Log.Infof("PowerOut  found:  %d", powerout)
-	log.Log.Infof("PowerCurr found:  %d", lastLimitEntries[0].powercurr)
 	if powerout > 0 {
+		log.Log.Infof("PowerOut  found:  %d", powerout)
+		log.Log.Infof("PowerCurr found:  %d", lastLimitEntries[0].powercurr)
 		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(powerout) -
 			float64(adapter.DefaultConfig.IntermediateSize)
-		log.Log.Debugf("Reduce to:  %d", reduceToRequest)
+		log.Log.Infof("Reduce to:  %d last=%d", reduceToRequest, lastRequested)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
 			newRequested = int64(reduceToRequest)
 		} else {
