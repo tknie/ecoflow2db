@@ -24,6 +24,8 @@ import (
 	"github.com/tknie/services"
 )
 
+const DefaultIntermediateSize = 15
+
 const SELECT_GET_ALL_PARAMETER = `
 with battery as (
 select
@@ -115,6 +117,9 @@ func (p *parameter) toString() string {
 
 func StartFlow(test bool) {
 	counter := 0
+	if adapter.DefaultConfig.IntermediateSize == 0 {
+		adapter.DefaultConfig.IntermediateSize = DefaultIntermediateSize
+	}
 	services.ServerMessage("Start Ecoflow flow analyze loop with %d seconds wait time", FlowLoopSeconds)
 	for {
 		cFlow, err := ReadCurrentFlow()
