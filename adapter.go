@@ -222,7 +222,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		log.Log.Infof("PowerCurr found:  %d", lastLimitEntries[0].powercurr)
 		reduceToRequest := float64(lastLimitEntries[0].requested) - float64(powerout) -
 			float64(adapter.DefaultConfig.IntermediateSize)
-		log.Log.Infof("Reduce to:  %d last=%d", reduceToRequest, lastRequested)
+		log.Log.Infof("Reduce to:  %f last=%d", reduceToRequest, lastRequested)
 		if reduceToRequest > float64(adapter.DefaultConfig.BaseRequest) {
 			newRequested = int64(reduceToRequest)
 		} else {
@@ -244,10 +244,8 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	sort.SliceStable(lastLimitEntries, func(i, j int) bool {
 		return lastLimitEntries[i].powercurr < lastLimitEntries[j].powercurr
 	})
-	if log.IsDebugLevel() {
-		for _, l := range lastLimitEntries {
-			log.Log.Debugf(l.toString())
-		}
+	for _, l := range lastLimitEntries {
+		log.Log.Infof("LAST LIMIT:" + l.toString())
 	}
 	l := len(lastLimitEntries)
 	median := float64(0)
@@ -260,17 +258,17 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	}
 
 	newRequested = lastLimitEntries[0].housein + int64(lastLimitEntries[0].powercurr) - lastRequested
+	log.Log.Infof("Base:     %d", adapter.DefaultConfig.BaseRequest)
+	log.Log.Infof("Minmum:   %d", lastLimitEntries[0].powercurr)
+	log.Log.Infof("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
+	log.Log.Infof("Median:   %f", median)
 	if log.IsDebugLevel() {
 		log.Log.Debugf("Old:      %d", lastRequested)
-		log.Log.Debugf("Median:   %f", median)
-		log.Log.Debugf("Minmum:   %d", lastLimitEntries[0].powercurr)
-		log.Log.Debugf("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
 		log.Log.Debugf("Power:    %d", lastLimitEntries[0].housein+int64(lastLimitEntries[0].powercurr))
 		log.Log.Debugf("Last:     %d", lastRequested)
-		log.Log.Debugf("NewDiff: %d", newRequested)
+		log.Log.Debugf("NewDiff:  %d", newRequested)
 		log.Log.Debugf("MedPower: %d", lastRequested+int64(median))
-		log.Log.Debugf("Base: %d", adapter.DefaultConfig.BaseRequest)
-		log.Log.Debugf("Max: %d", adapter.DefaultConfig.UpperBatLimit)
+		log.Log.Debugf("Max:      %d", adapter.DefaultConfig.UpperBatLimit)
 	}
 	newRequested = lastRequested + newRequested + adapter.DefaultConfig.IntermediateSize
 	if newRequested < adapter.DefaultConfig.BaseRequest {
