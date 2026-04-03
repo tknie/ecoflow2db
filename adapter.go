@@ -259,13 +259,16 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 
 	newRequested = lastLimitEntries[0].housein + int64(lastLimitEntries[0].powercurr) - lastRequested
 	log.Log.Infof("Base:     %d", adapter.DefaultConfig.BaseRequest)
+	log.Log.Infof("Last:     %d", lastRequested)
 	log.Log.Infof("Minmum:   %d", lastLimitEntries[0].powercurr)
+	log.Log.Infof("BatOut:   %d", lastLimitEntries[0].batout)
+	log.Log.Infof("BatIn:   %d", lastLimitEntries[0].batinput)
 	log.Log.Infof("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
 	log.Log.Infof("Median:   %f", median)
+	log.Log.Infof("Needed:   %f", lastLimitEntries[0].powercurr+int32(lastRequested))
 	if log.IsDebugLevel() {
 		log.Log.Debugf("Old:      %d", lastRequested)
 		log.Log.Debugf("Power:    %d", lastLimitEntries[0].housein+int64(lastLimitEntries[0].powercurr))
-		log.Log.Debugf("Last:     %d", lastRequested)
 		log.Log.Debugf("NewDiff:  %d", newRequested)
 		log.Log.Debugf("MedPower: %d", lastRequested+int64(median))
 		log.Log.Debugf("Max:      %d", adapter.DefaultConfig.UpperBatLimit)
