@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"math"
 	"os"
 	"sort"
 	"time"
@@ -246,6 +247,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	})
 	for _, l := range lastLimitEntries {
 		log.Log.Infof("LAST LIMIT:" + l.toString())
+		l.powercurr = int32(math.Max(float64(l.powercurr), float64(adapter.DefaultConfig.UpperBatLimit)))
 	}
 	l := len(lastLimitEntries)
 	median := float64(0)
