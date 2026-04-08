@@ -19,7 +19,7 @@ require (
 	github.com/Azure/go-ntlmssp v0.1.0 // indirect
 	github.com/VictoriaMetrics/easyproto v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/coreos/go-oidc/v3 v3.17.0 // indirect
+	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -48,7 +48,7 @@ require (
 	github.com/kovidgoyal/go-shm v1.0.0 // indirect
 	github.com/kovidgoyal/imaging v1.8.21 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
@@ -56,7 +56,7 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/tknie/adabas-go-api v1.7.12 // indirect
 	github.com/tknie/errorrepo v0.1.0 // indirect
-	github.com/tknie/goheif v0.0.0-20241029104240-29478ba33138 // indirect
+	github.com/tknie/goheif v0.0.0-20260407202049-b377b8a49533 // indirect
 	github.com/tknie/pam v0.0.0-20241226202719-7fe89c1216fb // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.43.0 // indirect
@@ -80,5 +80,5 @@ require (
 	github.com/tknie/services v0.5.0
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 )
