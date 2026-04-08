@@ -213,8 +213,8 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		return
 	}
 	converter := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
-	log.Log.Infof("Requested:  %d", lastLimitEntries[0].requested)
-	log.Log.Infof("Powerout:   %d", lastLimitEntries[0].powerout)
+	services.ServerMessage("Requested:  %d", lastLimitEntries[0].requested)
+	services.ServerMessage("Powerout:   %d", lastLimitEntries[0].powerout)
 	lastRequested := lastLimitEntries[0].requested
 	newRequested := lastRequested
 	powerout := lastLimitEntries[0].powerout
@@ -229,7 +229,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		} else {
 			newRequested = adapter.DefaultConfig.BaseRequest
 		}
-		if !test && newRequested != lastRequested {
+		if adapter.DefaultConfig.DynamicRequest && !test && newRequested != lastRequested {
 			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
 		}
 		return
@@ -263,10 +263,10 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	log.Log.Infof("Base:     %d", adapter.DefaultConfig.BaseRequest)
 	log.Log.Infof("Last:     %d", lastRequested)
 	log.Log.Infof("Minmum:   %d", lastLimitEntries[0].powercurr)
-	log.Log.Infof("BatOut:   %d", lastLimitEntries[0].batout)
-	log.Log.Infof("BatIn:   %d", lastLimitEntries[0].batinput)
+	services.ServerMessage("BatOut:   %f", lastLimitEntries[0].batout)
+	log.Log.Infof("BatIn:   %f", lastLimitEntries[0].batinput)
 	log.Log.Infof("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
-	log.Log.Infof("Median:   %f", median)
+	services.ServerMessage("Median:   %f", median)
 	log.Log.Infof("Needed:   %f", lastLimitEntries[0].powercurr+int32(lastRequested))
 	if log.IsDebugLevel() {
 		log.Log.Debugf("Old:      %d", lastRequested)
@@ -282,10 +282,10 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	if newRequested > adapter.DefaultConfig.UpperBatLimit {
 		newRequested = adapter.DefaultConfig.UpperBatLimit
 	}
-	log.Log.Infof("New power consumption:      %d > %d", newRequested, adapter.DefaultConfig.BaseRequest)
+	services.ServerMessage("New power consumption:      %d > %d", newRequested, adapter.DefaultConfig.BaseRequest)
 	if newRequested > adapter.DefaultConfig.BaseRequest {
 		log.Log.Infof("Set request to converter %s: %d", converter, newRequested)
-		if !test && newRequested != lastRequested {
+		if adapter.DefaultConfig.DynamicRequest && !test && newRequested != lastRequested {
 			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
 		} else {
 			log.Log.Infof("Test = %v, New requested is same as last requested, no change: %d", test, newRequested)

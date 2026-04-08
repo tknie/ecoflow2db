@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert/yaml"
 	"github.com/tknie/log"
+	"github.com/tknie/services"
 )
 
 type adapterConfig struct {
@@ -28,6 +29,7 @@ type adapterConfig struct {
 }
 
 type defaultConfig struct {
+	DynamicRequest   bool   `yaml:"dynamicRequest"`
 	BaseRequest      int64  `yaml:"baseWatt"`
 	LowerBatLimit    int64  `yaml:"lowerBatLimit"`
 	UpperBatLimit    int64  `yaml:"upperBatLimit"`
@@ -85,6 +87,11 @@ func readConfig(file string) ([]byte, error) {
 }
 
 func LoadConfig(file string) {
+	services.InitWatcher(file, file, watchConfig)
+	evaluateConfig(file)
+}
+
+func evaluateConfig(file string) {
 	if file != "" {
 		fileEnvResolved := os.ExpandEnv(file)
 
@@ -110,4 +117,15 @@ func LoadConfig(file string) {
 	if adapter.DatabaseConfig.Table == "" {
 		adapter.DatabaseConfig.Table = os.Getenv("ECOFLOW_DB_TABLENAME")
 	}
+	if adapter.DefaultConfig.DynamicRequest {
+		services.ServerMessage("Dynamic request is enabled, power request will be updated if needed")
+	} else {
+		services.ServerMessage("Dynamic request is disabled, power request will not be updated")
+	}
+}
+
+func watchConfig(s string, a any) error {
+	log.Log.Infof("Configuration file %s/%s changed, reload it", s, a.(string))
+	evaluateConfig(a.(string))
+	return nil
 }
