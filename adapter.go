@@ -267,9 +267,9 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 	log.Log.Infof("BatIn:   %f", lastLimitEntries[0].batinput)
 	log.Log.Infof("Maxima:   %d", lastLimitEntries[len(lastLimitEntries)-1].powercurr)
 	services.ServerMessage("Median:   %f", median)
-	log.Log.Infof("Needed:   %f", lastLimitEntries[0].powercurr+int32(lastRequested))
+	log.Log.Infof("Needed:   %d", lastLimitEntries[0].powercurr+int32(lastRequested))
+	log.Log.Infof("Old:      %d", lastRequested)
 	if log.IsDebugLevel() {
-		log.Log.Debugf("Old:      %d", lastRequested)
 		log.Log.Debugf("Power:    %d", lastLimitEntries[0].housein+int64(lastLimitEntries[0].powercurr))
 		log.Log.Debugf("NewDiff:  %d", newRequested)
 		log.Log.Debugf("MedPower: %d", lastRequested+int64(median))
@@ -288,7 +288,8 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		if adapter.DefaultConfig.DynamicRequest && !test && newRequested != lastRequested {
 			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
 		} else {
-			log.Log.Infof("Test = %v, New requested is same as last requested, no change: %d", test, newRequested)
+			log.Log.Infof("Dynamic request = %v, test = %v or new requested is same as last requested %d, no change: %d",
+				adapter.DefaultConfig.DynamicRequest, test, lastRequested, newRequested)
 		}
 	}
 }
