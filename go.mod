@@ -3,12 +3,13 @@ module github.com/tknie/ecoflow2db
 go 1.25.0
 
 require (
+	github.com/eclipse/paho.golang v0.23.0
 	github.com/go-faster/jx v1.2.0
 	github.com/ogen-go/ogen v1.20.3
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
-	github.com/tknie/clu v0.0.0-20260403162126-9af4b32e080e
-	github.com/tknie/ecoflow v0.0.0-20260225195033-557f2ff9d034
+	github.com/tknie/clu v0.0.0-20260418150229-5cfea44685f6
+	github.com/tknie/ecoflow v0.0.0-20260420191551-07a08d6e0504
 	github.com/tknie/flynn v0.10.0
 	github.com/tknie/log v0.4.0
 	golang.org/x/text v0.36.0
@@ -21,9 +22,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.11.5 // indirect
+	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/eclipse/paho.golang v0.23.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -43,7 +43,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.9.1 // indirect
+	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/kovidgoyal/go-parallel v1.1.1 // indirect
 	github.com/kovidgoyal/go-shm v1.0.0 // indirect

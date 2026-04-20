@@ -82,8 +82,6 @@ func InitMqtt(user, password string) {
 	services.ServerMessage("Connecting MQTT client")
 	ecoflow.InitMqtt(user, password)
 	log.Log.Debugf("Wait for Ecoflow disconnect")
-	services.ServerMessage("Waiting for MQTT data")
-
 }
 
 func SetEnvironmentPowerConsumption(value float64) {

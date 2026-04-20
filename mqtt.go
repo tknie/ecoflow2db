@@ -123,8 +123,8 @@ func getMqttCurrentRequest() {
 	}
 	converterRequested := dsn["20_1.invToOtherWatts"].(float64) / 10
 	if converterRequested != currentRequested {
+		services.ServerMessage("Adapt energyrequested: %.1f before was %.1f", converterRequested, currentRequested)
 		currentRequested = converterRequested
-		services.ServerMessage("Current energyrequested: %.1f", currentRequested)
 	}
 }
 
@@ -259,7 +259,7 @@ func (topic *Topic) processEvent(event map[string]interface{}) {
 	converter := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
 	out := event["out"].(float64)
 	power := event["power"].(float64)
-	log.Log.Debugf("Power: %f, out: %f, new requested: %f, current requested: %f, blockRequestTime: %v",
+	log.Log.Debugf("Pre-Power: %f, out: %f, new requested: %f, current requested: %f, blockRequestTime: %v",
 		power, out, newRequested, currentRequested, time.Until(blockRequestTime))
 
 	if currentRequested == 0 || !adapter.DefaultConfig.RealtimeRequest {
@@ -303,11 +303,14 @@ func (topic *Topic) processEvent(event map[string]interface{}) {
 	if newRequested < float64(adapter.DefaultConfig.BaseRequest) {
 		newRequested = float64(adapter.DefaultConfig.BaseRequest)
 	}
-	log.Log.Debugf("Power: %f, out: %f, new requested: %f, current requested: %f",
+	log.Log.Infof("Power: %f, out: %f, new requested: %f, current requested: %f",
 		power, out, newRequested, currentRequested)
 
 	if newRequested > 0 && newRequested != float64(currentRequested) {
 		blockRequestTime = time.Now().Add(time.Duration(adapter.DefaultConfig.WaitAfterRequestSeconds) * time.Second)
+		services.ServerMessage("Realtime power request:   %0.1f in [%04d:%04d] power = %0.1f out = %0.1f",
+			newRequested, adapter.DefaultConfig.BaseRequest, adapter.DefaultConfig.UpperBatLimit,
+			power, out)
 		client.SetEnvironmentPowerConsumption(converter, newRequested)
 		getMqttCurrentRequest()
 	}

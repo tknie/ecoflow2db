@@ -17,6 +17,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2 v1.11.5 h1:Q/sSnsKerHeCkc/jSTNq1oCm7KiVgUMZRDUoRu0JQZQ=
 github.com/dlclark/regexp2 v1.11.5/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
+github.com/dlclark/regexp2 v1.12.0 h1:0j4c5qQmnC6XOWNjP3PIXURXN2gWx76rd3KvgdPkCz8=
+github.com/dlclark/regexp2 v1.12.0/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
 github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=
 github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/eclipse/paho.golang v0.23.0 h1:KHgl2wz6EJo7cMBmkuhpt7C576vP+kpPv7jjvSyR6Mk=
@@ -77,6 +79,8 @@ github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7Ulw
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
 github.com/jackc/pgx/v5 v5.9.1 h1:uwrxJXBnx76nyISkhr33kQLlUqjv7et7b9FjCen/tdc=
 github.com/jackc/pgx/v5 v5.9.1/go.mod h1:mal1tBGAFfLHvZzaYh77YS/eC6IX9OWbRV1QIIM0Jn4=
+github.com/jackc/pgx/v5 v5.9.2 h1:3ZhOzMWnR4yJ+RW1XImIPsD1aNSz4T4fyP7zlQb56hw=
+github.com/jackc/pgx/v5 v5.9.2/go.mod h1:mal1tBGAFfLHvZzaYh77YS/eC6IX9OWbRV1QIIM0Jn4=
 github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/jcmturner/aescts/v2 v2.0.0 h1:9YKLH6ey7H4eDBXW8khjYslgyqG2xZikXP0EQFKrle8=
@@ -132,8 +136,12 @@ github.com/tknie/adabas-go-api v1.7.12 h1:ZggANtYozNaRXkr+93ah9izylLBFiX51Kn5Vqh
 github.com/tknie/adabas-go-api v1.7.12/go.mod h1:BXTeSN6NNYptF3MkelAg8opTB3AGDLbzipFR1pzgfvU=
 github.com/tknie/clu v0.0.0-20260403162126-9af4b32e080e h1:Tud2liYa3YAFwiWaSTXSOSEbJv4EJbPDcnjajOSUt7Q=
 github.com/tknie/clu v0.0.0-20260403162126-9af4b32e080e/go.mod h1:xEz+ZZQKTFBiuwsaHZW1lhzC8GM3wMpzUVyZOGEc7Mg=
+github.com/tknie/clu v0.0.0-20260418150229-5cfea44685f6 h1:N0XW3pRj20nWe0cJd36lECu0s58I9xIL8vhSdvi37CY=
+github.com/tknie/clu v0.0.0-20260418150229-5cfea44685f6/go.mod h1:8OWZ5dMEumnfcgdHLTD9Rcpf9dlGRc+6h/66HWqTbI8=
 github.com/tknie/ecoflow v0.0.0-20260225195033-557f2ff9d034 h1:Vm67hO4r+XMgGl/212iulD2F8TuKo/cOSWMgffONyj8=
 github.com/tknie/ecoflow v0.0.0-20260225195033-557f2ff9d034/go.mod h1:LvtJCcTguG+vSzml36h35BzTfkTFj9kTEF+v6jARgKU=
+github.com/tknie/ecoflow v0.0.0-20260420191551-07a08d6e0504 h1:MSSJXqxUZGcAduFKbIOOZXgV2EuGYiHbx81CflZATak=
+github.com/tknie/ecoflow v0.0.0-20260420191551-07a08d6e0504/go.mod h1:/S/2QVDqhoMN54zP2m2VJq1v18aZePhKgvLqq5f8QOY=
 github.com/tknie/errorrepo v0.1.0 h1:pOt79EWL4P4UjPzXknNcdAr01fjgF38XY1u1ZzHttqo=
 github.com/tknie/errorrepo v0.1.0/go.mod h1:K4bEhPce5B7ybIptX2D2mpRfjWehStjeUG1fiegwoq0=
 github.com/tknie/flynn v0.9.11 h1:1eYBjRS6h2Z2uSesltPNldPiCRxDKD8y2rKFt7yyd4g=
