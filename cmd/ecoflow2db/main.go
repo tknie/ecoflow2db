@@ -18,12 +18,13 @@ import (
 	"time"
 
 	"github.com/tknie/ecoflow2db"
+	"github.com/tknie/log"
 	"github.com/tknie/services"
 )
 
 func init() {
 	services.ServerMessage("Start ecoflow2db application %s (build at %v)", ecoflow2db.Version, ecoflow2db.BuildDate)
-	ecoflow2db.StartLog("ecoflow2db.log")
+	log.InitZapLogWithFilename("ecoflow2db.log")
 }
 
 func main() {
@@ -91,20 +92,20 @@ func main() {
 	ecoflow2db.StatLoopMinutes = time.Duration(statSecs)
 
 	ecoflow2db.InitDatabase()
-	if readFlow {
+	switch {
+	case readFlow:
 		l, err := ecoflow2db.ReadCurrentFlow()
 		if err != nil {
 			services.ServerMessage("Error calling flow: %v", err)
 		}
 		ecoflow2db.AnalyzeEnergyHistory(l, true)
-		return
-	}
-	if flow {
+	case flow:
 		ecoflow2db.StartFlow(test)
 		return
-	}
-	services.ServerMessage("Loop in API each %d seconds", ecoflow2db.LoopSeconds)
+	default:
+		services.ServerMessage("Loop in API each %d seconds", ecoflow2db.LoopSeconds)
 
-	ecoflow2db.InitEcoflow()
+		ecoflow2db.InitEcoflow()
+	}
 
 }

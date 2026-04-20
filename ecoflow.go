@@ -56,6 +56,7 @@ func prepareEcoflow() {
 
 // InitEcoflow init ecoflow MQTT
 func InitEcoflow() {
+	adapter.ConnectMQTT()
 	prepareEcoflow()
 	user := adapter.EcoflowConfig.User
 	password := adapter.EcoflowConfig.Password

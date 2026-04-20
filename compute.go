@@ -165,7 +165,7 @@ func ReadCurrentFlow() ([]*parameter, error) {
 	lastLimitEntries := make([]*parameter, 0)
 	fieldMap := make(map[string]int)
 	err = readBatch(readid, tn, buffer.String(), func(search *common.Query, result *common.Result) error {
-		if headerOutput {
+		if headerOutput && log.IsDebugLevel() {
 			log.Log.Debugf("LEN: %d->%d", len(fieldMap), len(result.Fields))
 			header := ""
 			for i, field := range result.Fields {
@@ -208,7 +208,7 @@ func ReadCurrentFlow() ([]*parameter, error) {
 }
 
 func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
-	if len(lastLimitEntries) == 0 {
+	if len(lastLimitEntries) == 0 || !adapter.DefaultConfig.DynamicRequest {
 		log.Log.Infof("No last limit entries found")
 		return
 	}
@@ -288,7 +288,7 @@ func AnalyzeEnergyHistory(lastLimitEntries []*parameter, test bool) {
 		if adapter.DefaultConfig.DynamicRequest && !test && newRequested != lastRequested {
 			client.SetEnvironmentPowerConsumption(converter, float64(newRequested))
 		} else {
-			log.Log.Infof("Dynamic request = %v, test = %v or new requested is same as last requested %d, no change: %d",
+			log.Log.Infof("Dynamic request = %v, test = %v or new requested is same as last requested %d, computed value: %d",
 				adapter.DefaultConfig.DynamicRequest, test, lastRequested, newRequested)
 		}
 	}

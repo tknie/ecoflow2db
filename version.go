@@ -15,7 +15,7 @@ package ecoflow2db
 var BuildDate string
 
 // BuildVersion build version
-var BuildVersion string
+var BuildVersion = "vDevelopment"
 
 // Version component version
 var Version string

@@ -25,16 +25,30 @@ import (
 type adapterConfig struct {
 	DefaultConfig  *defaultConfig  `yaml:"default"`
 	DatabaseConfig *databaseConfig `yaml:"database"`
+	Mqtt           *mqttConfig     `yaml:"mqtt"`
 	EcoflowConfig  *ecoflowConfig  `yaml:"ecoflow"`
 }
 
 type defaultConfig struct {
-	DynamicRequest   bool   `yaml:"dynamicRequest"`
-	BaseRequest      int64  `yaml:"baseWatt"`
-	LowerBatLimit    int64  `yaml:"lowerBatLimit"`
-	UpperBatLimit    int64  `yaml:"upperBatLimit"`
-	IntermediateSize int64  `yaml:"intermediateSize"`
-	Debug            string `yaml:"debug"`
+	DynamicRequest          bool   `yaml:"dynamicRequest"`
+	RealtimeRequest         bool   `yaml:"realtimeRequest"`
+	WaitAfterRequestSeconds int64  `yaml:"waitAfterRequestSeconds"`
+	BaseRequest             int64  `yaml:"baseWatt"`
+	LowerBatLimit           int64  `yaml:"lowerBatLimit"`
+	UpperBatLimit           int64  `yaml:"upperBatLimit"`
+	IntermediateSize        int64  `yaml:"intermediateSize"`
+	Debug                   string `yaml:"debug"`
+}
+
+type mqttConfig struct {
+	Server              string   `yaml:"server"`
+	Username            string   `yaml:"username"`
+	Password            string   `yaml:"password"`
+	LoopIntervalSeconds int      `yaml:"loopIntervalSeconds"`
+	Qos                 int      `yaml:"qos"`
+	Clientid            string   `yaml:"clientID"`
+	MaxTries            int      `yaml:"maxTries"`
+	Topics              []*Topic `yaml:"topics"`
 }
 
 type databaseConfig struct {

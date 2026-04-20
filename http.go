@@ -73,7 +73,7 @@ func httpParameterStore(client *ecoflow.Client) {
 				// prefix = strings.Split(k, ".")[0]
 				// name := "eco_" + strings.ReplaceAll(k[len(prefix)+1:], ".", "_")
 				name := "eco_" + strings.ReplaceAll(k, ".", "_")
-				log.Log.Debugf("Add column %s=%v %T -> %s\n", k, v, v, name)
+				log.Log.Debugf("Add column %s=%v %T -> %s", k, v, v, name)
 				column := createValueColumn(name, v)
 				columns = append(columns, column)
 			}
@@ -177,7 +177,7 @@ func createValueColumn(name string, v interface{}) *common.Column {
 	default:
 		services.ServerMessage("Unknown type %s=%T", name, v)
 	}
-	log.Log.Errorf("Unknown type %s=%T\n", name, v)
+	log.Log.Errorf("Unknown type %s=%T", name, v)
 	return nil
 }
 
@@ -242,7 +242,7 @@ func insertHttpData(data map[string]interface{}) ([]string, [][]any) {
 			}
 		default:
 			services.ServerMessage("Unknown HTTP JSON type %s=%T", k, v)
-			log.Log.Errorf("Unknown type %s=%T\n", k, v)
+			log.Log.Errorf("Unknown type %s=%T", k, v)
 		}
 	}
 	return fields, [][]any{columns}
@@ -266,7 +266,7 @@ func Callback(serialNumber string, data map[string]interface{}) {
 		for _, k := range keys {
 			v := data[k]
 			name := "eco_" + strings.ReplaceAll(k, ".", "_")
-			log.Log.Debugf("Add column %s=%v %T -> %s\n", k, v, v, name)
+			log.Log.Debugf("Add column %s=%v %T -> %s", k, v, v, name)
 			column := createValueColumn(name, v)
 			columns = append(columns, column)
 		}

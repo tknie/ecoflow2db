@@ -12,6 +12,7 @@
 package ecoflow2db
 
 import (
+	"fmt"
 	"os"
 	"runtime/debug"
 	"slices"
@@ -48,6 +49,7 @@ func InitDatabase() {
 		services.ServerMessage("Shuting down ... URL is incorrect or cannot be parsed: %v", err)
 		log.Log.Fatalf("REST audit URL incorrect: " + databaseUrl)
 	}
+	dbRef.Options = append(dbRef.Options, fmt.Sprintf("application_name=Ecoflow2db %s", Version))
 	if dbRef.User == "" {
 		dbRef.User = os.Getenv("ECOFLOW_DB_USER")
 	}
@@ -152,7 +154,7 @@ func insertTable(storeid common.RegDbID, tn string, data map[string]interface{},
 		Fields: fields}
 	_, err := storeid.Insert(tn, insert)
 	if err != nil {
-		services.ServerMessage("Error inserting record: %v\n", err)
+		services.ServerMessage("Error inserting record: %v", err)
 		// log.Log.Fatal("Error inserting record: ", err)
 	} else {
 		getDbStatEntry(tn).counter++

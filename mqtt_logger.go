@@ -1,0 +1,29 @@
+/*
+* Copyright 2023-2025 Thorsten A. Knieling
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+ */
+
+package ecoflow2db
+
+import "github.com/tknie/log"
+
+type MQTTWrapperLogger struct {
+}
+
+func (l *MQTTWrapperLogger) Println(v ...interface{}) {
+	s := ""
+	for range v {
+		s += "MQTT %v "
+	}
+	log.Log.Debugf(s, v...)
+}
+
+func (l *MQTTWrapperLogger) Printf(format string, v ...interface{}) {
+	log.Log.Debugf("MQTT "+format, v...)
+}
