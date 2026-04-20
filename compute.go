@@ -165,7 +165,7 @@ func ReadCurrentFlow() ([]*parameter, error) {
 	lastLimitEntries := make([]*parameter, 0)
 	fieldMap := make(map[string]int)
 	err = readBatch(readid, tn, buffer.String(), func(search *common.Query, result *common.Result) error {
-		if headerOutput && log.IsDebugLevel() {
+		if headerOutput {
 			log.Log.Debugf("LEN: %d->%d", len(fieldMap), len(result.Fields))
 			header := ""
 			for i, field := range result.Fields {
