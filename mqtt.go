@@ -27,10 +27,11 @@ import (
 	"github.com/tknie/services"
 )
 
-var counter = uint64(0)
+var mqttCounter = uint64(0)
 var mqttDone = make(chan bool, 1)
 
 const DefaultLoopSeconds = 120
+const DefaultMaxTries = 120
 
 var OutLoopSeconds = DefaultLoopSeconds
 var CloseIfStuck = false
@@ -56,39 +57,39 @@ func loopIncomingMessages(msgChan chan *paho.Publish, topicMap map[string]*Topic
 	if OutLoopSeconds == 0 {
 		return
 	}
-	go loopCounterAndCancelOutput()
-	for m := range msgChan {
-		log.Log.Debugf("%s: Message: %s", m.Topic, string(m.Payload))
-		if topic, ok := topicMap[m.Topic]; ok {
-			x := make(map[string]interface{})
-			log.Log.Debugf("EVENT....%s", string(m.Payload))
-			err := json.Unmarshal(m.Payload, &x)
-			if err != nil {
-				fmt.Println("JSON unmarshal fails:", err)
-				fmt.Println("JSON unmarshal fails for payload:", string(m.Payload))
-				continue
-			}
-
-			em := topic.ParseMessage(x)
-			if em != nil {
-				topic.processEvent(em)
-				os.Stdout.Sync()
-			}
-		}
-	}
+	go loopCounterAndCancelOutput(msgChan, topicMap)
 }
 
-func loopCounterAndCancelOutput() {
+func loopCounterAndCancelOutput(msgChan chan *paho.Publish, topicMap map[string]*Topic) {
 	lastCounter := uint64(0)
+	lastTime := time.Now()
 	try := 0
 	for {
 		select {
+		case m := <-msgChan:
+			mqttCounter++
+			log.Log.Debugf("%s: Message: %s", m.Topic, string(m.Payload))
+			if topic, ok := topicMap[m.Topic]; ok {
+				x := make(map[string]interface{})
+				log.Log.Debugf("EVENT....%s", string(m.Payload))
+				err := json.Unmarshal(m.Payload, &x)
+				if err != nil {
+					fmt.Println("JSON unmarshal fails:", err)
+					fmt.Println("JSON unmarshal fails for payload:", string(m.Payload))
+					continue
+				}
+
+				em := topic.ParseMessage(x)
+				if em != nil {
+					topic.processEvent(em)
+					os.Stdout.Sync()
+				}
+			}
 		case <-mqttDone:
 			services.ServerMessage("Ecoflow analyze loop is stopped")
 			return
 		case <-time.After(time.Second * time.Duration(OutLoopSeconds)):
-			services.ServerMessage("Received MQTT msgs: %04d", counter)
-			if counter == lastCounter && CloseIfStuck {
+			if mqttCounter == lastCounter && CloseIfStuck {
 				if try > 10 {
 					services.ServerMessage("Received MQTT msgs error still stuck")
 					os.Exit(10)
@@ -97,7 +98,11 @@ func loopCounterAndCancelOutput() {
 			} else {
 				try = 0
 			}
-			lastCounter = counter
+			lastCounter = mqttCounter
+		}
+		if lastTime.Add(60 * time.Second).Before(time.Now()) {
+			services.ServerMessage("Received MQTT msgs: %04d", mqttCounter)
+			lastTime = time.Now()
 		}
 	}
 }
@@ -155,7 +160,7 @@ func (config *adapterConfig) ConnectMQTT() {
 	}
 	getMqttCurrentRequest()
 	if config.Mqtt.MaxTries == 0 {
-		config.Mqtt.MaxTries = 10
+		config.Mqtt.MaxTries = DefaultMaxTries
 	}
 	logger := &MQTTWrapperLogger{}
 	msgChan := make(chan *paho.Publish)

@@ -36,8 +36,17 @@ var LoopSeconds = DefaultSeconds
 var httpDone = make(chan bool, 1)
 var httpCounter = uint64(0)
 
+var statusChange = make(map[string]bool)
+
 func init() {
 	ecoflow.Callback = Callback
+}
+
+func checkDeviceOnline(sn string) bool {
+	if b, ok := statusChange[sn]; ok {
+		return b
+	}
+	return false
 }
 
 // httpParameterStore main thread reading information with HTTP request
@@ -84,7 +93,6 @@ func httpParameterStore(client *ecoflow.Client) {
 	// Loop reading and writing data into table
 	counter := uint64(0)
 	needRefresh := false
-	statusChange := make(map[string]bool)
 
 	for {
 		counter++
@@ -125,14 +133,14 @@ func httpParameterStore(client *ecoflow.Client) {
 					}
 					if l.Online != 1 {
 						if status && !ok {
-							services.ServerMessage(l.SN + " device is offline")
+							services.ServerMessage("'%s' device is getting offline", l.SN)
 						}
 						statusChange[l.SN] = false
 						needRefresh = true
 					} else {
 						statusChange[l.SN] = true
 						if !status {
-							services.ServerMessage(l.SN + " device is online")
+							services.ServerMessage("'%s' device is getting online", l.SN)
 						}
 					}
 				}

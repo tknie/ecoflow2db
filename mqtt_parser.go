@@ -142,7 +142,6 @@ func (topic *Topic) ParseMessage(x map[string]interface{}) map[string]interface{
 	em := topic.createEntry(x)
 	if em != nil {
 		tlog.Log.Debugf("Return dynamic %v", em)
-		counter++
 		return em
 	}
 	services.ServerMessage("No dynamic parsing mapping")

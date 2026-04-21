@@ -34,7 +34,6 @@ type defaultConfig struct {
 	RealtimeRequest         bool   `yaml:"realtimeRequest"`
 	WaitAfterRequestSeconds int64  `yaml:"waitAfterRequestSeconds"`
 	BaseRequest             int64  `yaml:"baseWatt"`
-	LowerBatLimit           int64  `yaml:"lowerBatLimit"`
 	UpperBatLimit           int64  `yaml:"upperBatLimit"`
 	IntermediateSize        int64  `yaml:"intermediateSize"`
 	Debug                   string `yaml:"debug"`
@@ -69,7 +68,7 @@ type ecoflowConfig struct {
 	Battery                 []string `yaml:"battery"`
 }
 
-const defaultBaseRequest = 170
+const defaultBaseRequest = 100
 const defaultMaxRequest = 250
 
 var adapter = &adapterConfig{
@@ -131,11 +130,18 @@ func evaluateConfig(file string) {
 	if adapter.DatabaseConfig.Table == "" {
 		adapter.DatabaseConfig.Table = os.Getenv("ECOFLOW_DB_TABLENAME")
 	}
-	if adapter.DefaultConfig.DynamicRequest {
+	switch {
+	case adapter.DefaultConfig.DynamicRequest && adapter.DefaultConfig.RealtimeRequest:
+		adapter.DefaultConfig.DynamicRequest = false
+		services.ServerMessage("Attention: Dynamic is switched off and relatime request is enabled, power request will be updated")
+	case adapter.DefaultConfig.DynamicRequest:
 		services.ServerMessage("Dynamic request is enabled, power request will be updated if needed")
-	} else {
+	case adapter.DefaultConfig.RealtimeRequest:
+		services.ServerMessage("Realtime request is enabled, power request will be updated if needed")
+	default:
 		services.ServerMessage("Dynamic request is disabled, power request will not be updated")
 	}
+
 }
 
 func watchConfig(s string, a any) error {
