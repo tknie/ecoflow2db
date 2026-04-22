@@ -103,7 +103,7 @@ func httpParameterStore(client *ecoflow.Client) {
 			return
 		case <-time.After(time.Second * time.Duration(LoopSeconds)):
 			if counter%350 == 0 {
-				services.ServerMessage("Received HTTP requests: %04d", counter)
+				services.ServerMessage("Send HTTP requests: %04d", counter)
 			}
 
 			for _, l := range devices.Devices {

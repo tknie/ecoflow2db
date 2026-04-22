@@ -25,6 +25,7 @@ import (
 	"github.com/tknie/ecoflow"
 	"github.com/tknie/log"
 	"github.com/tknie/services"
+	"golang.org/x/text/message"
 )
 
 var mqttCounter = uint64(0)
@@ -64,6 +65,7 @@ func loopCounterAndCancelOutput(msgChan chan *paho.Publish, topicMap map[string]
 	lastCounter := uint64(0)
 	lastTime := time.Now()
 	try := 0
+	services.ServerMessage("Start MQTT analyze loop with output every %d seconds", OutLoopSeconds)
 	for {
 		select {
 		case m := <-msgChan:
@@ -101,7 +103,8 @@ func loopCounterAndCancelOutput(msgChan chan *paho.Publish, topicMap map[string]
 			lastCounter = mqttCounter
 		}
 		if lastTime.Add(60 * time.Second).Before(time.Now()) {
-			services.ServerMessage("Received MQTT msgs: %04d", mqttCounter)
+			p := message.NewPrinter(message.MatchLanguage("en"))
+			services.ServerMessage(p.Sprintf("Received realtime MQTT msgs: %4d", mqttCounter))
 			lastTime = time.Now()
 		}
 	}
@@ -128,7 +131,7 @@ func getMqttCurrentRequest() {
 	}
 	converterRequested := dsn["20_1.invToOtherWatts"].(float64) / 10
 	if converterRequested != currentRequested {
-		services.ServerMessage("Adapt energyrequested: %.1f before was %.1f", converterRequested, currentRequested)
+		services.ServerMessage("Update accu energy requested: %.1f before was %.1f", converterRequested, currentRequested)
 		currentRequested = converterRequested
 	}
 }
@@ -258,7 +261,7 @@ func (config *adapterConfig) ConnectMQTT() {
 }
 
 func (topic *Topic) processEvent(event map[string]interface{}) {
-	log.Log.Debugf("Processing event for topic: %s, got event: %v request: %d",
+	log.Log.Debugf("Processing event for topic: %s, got event: %v request: %f",
 		topic.Name, event, currentRequested)
 	newRequested := currentRequested
 	converter := os.ExpandEnv(adapter.EcoflowConfig.MicroConverter[0])
@@ -271,7 +274,7 @@ func (topic *Topic) processEvent(event map[string]interface{}) {
 		getMqttCurrentRequest()
 		return
 	}
-	log.Log.Infof("Realtime request = %v  or new requested is same as last requested %d, computed value: %d power: %f out: %f",
+	log.Log.Infof("Realtime request = %v  or new requested is same as last requested %f, computed value: %f power: %f out: %f",
 		adapter.DefaultConfig.RealtimeRequest, currentRequested, newRequested, power, out)
 
 	if power < 0 && out == 0 {
