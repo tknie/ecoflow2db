@@ -6,7 +6,6 @@ require (
 	github.com/eclipse/paho.golang v0.23.0
 	github.com/go-faster/jx v1.2.0
 	github.com/ogen-go/ogen v1.20.3
-	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	github.com/tknie/clu v0.0.0-20260418150229-5cfea44685f6
 	github.com/tknie/ecoflow v0.0.0-20260420191551-07a08d6e0504
@@ -17,7 +16,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
-	github.com/Azure/go-ntlmssp v0.1.0 // indirect
+	github.com/Azure/go-ntlmssp v0.1.1 // indirect
 	github.com/VictoriaMetrics/easyproto v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
@@ -55,6 +54,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
+	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/tknie/adabas-go-api v1.7.12 // indirect
 	github.com/tknie/errorrepo v0.1.0 // indirect
 	github.com/tknie/goheif v0.0.0-20260407202049-b377b8a49533 // indirect
